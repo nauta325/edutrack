@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>홍보은영어학원 · 원생 관리 시스템</title>
+<style>
+  :root{
+    --cream:#F7EFDE; --cream-2:#FBF6EC; --navy:#1E2B47; --navy-2:#2C3B5C;
+    --coral:#D9543C; --coral-soft:#F3D8D1; --gold:#BC8A30; --gold-soft:#EDE0C4;
+    --ink:#27313F; --muted:#7A8190; --line:#E4DCC9; --white:#fff;
+    --ok:#3F7A52; --ok-soft:#DDEBE0; --warn:#B6852B; --warn-soft:#F3E6C8;
+    --radius:14px; --shadow:0 1px 2px rgba(30,43,71,.06),0 8px 24px rgba(30,43,71,.07);
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:"Pretendard","Apple SD Gothic Neo","Malgun Gothic",-apple-system,system-ui,sans-serif;
+    background:var(--cream); color:var(--ink); font-size:15px; line-height:1.55;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,h4{margin:0;color:var(--navy);font-weight:700;letter-spacing:-.01em}
+  button{font-family:inherit;cursor:pointer;border:none;background:none}
+  input,select,textarea{font-family:inherit;font-size:14px}
+  a{color:inherit}
+
+  /* layout */
+  .app{display:flex;min-height:100vh}
+  .sidebar{
+    width:248px;flex-shrink:0;background:var(--navy);color:#D7DCE8;
+    padding:24px 16px;position:sticky;top:0;height:100vh;overflow-y:auto;
+  }
+  .brand{padding:0 8px 20px;border-bottom:1px solid rgba(255,255,255,.1);margin-bottom:16px}
+  .brand .logo{display:flex;align-items:center;gap:10px}
+  .brand .mark{
+    width:34px;height:34px;border-radius:9px;background:var(--coral);
+    display:grid;place-items:center;color:#fff;font-weight:800;font-size:17px;flex-shrink:0;
+  }
+  .brand .name{color:#fff;font-size:16px;font-weight:700;line-height:1.2}
+  .brand .sub{font-size:11px;color:#9AA5BD;margin-top:2px}
+  .nav-group-label{font-size:10.5px;letter-spacing:.12em;color:#8492AF;text-transform:uppercase;padding:14px 10px 6px;font-weight:700}
+  .nav-item{
+    display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:9px;
+    color:#C3CADA;font-size:14px;font-weight:500;width:100%;text-align:left;transition:.15s;margin-bottom:2px;
+  }
+  .nav-item:hover{background:rgba(255,255,255,.06);color:#fff}
+  .nav-item.active{background:var(--coral);color:#fff;font-weight:600}
+  .nav-item .ic{width:18px;text-align:center;font-size:15px;opacity:.9}
+  .nav-foot{margin-top:18px;padding:12px 10px 0;border-top:1px solid rgba(255,255,255,.1);font-size:11px;color:#8492AF}
+
+  .main{flex:1;min-width:0;display:flex;flex-direction:column}
+  .topbar{
+    background:var(--cream-2);border-bottom:1px solid var(--line);
+    padding:14px 32px;display:flex;align-items:center;justify-content:space-between;gap:16px;
+    position:sticky;top:0;z-index:20;
+  }
+  .topbar .crumb{font-size:13px;color:var(--muted)}
+  .topbar .crumb b{color:var(--navy)}
+  .topbar .term{font-size:12px;color:var(--muted)}
+  .content{padding:28px 32px 60px;max-width:1180px;width:100%}
+
+  .page-head{margin-bottom:22px}
+  .page-head h1{font-size:23px}
+  .page-head p{color:var(--muted);font-size:13.5px;margin:5px 0 0}
+
+  /* cards */
+  .card{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+  .card.pad{padding:22px}
+  .card-title{font-size:15px;font-weight:700;color:var(--navy);margin-bottom:4px}
+  .card-sub{font-size:12.5px;color:var(--muted);margin-bottom:16px}
+
+  .grid{display:grid;gap:18px}
+  .g-stats{grid-template-columns:repeat(4,1fr)}
+  .g-2{grid-template-columns:1fr 1fr}
+  .g-37{grid-template-columns:340px 1fr}
+  .g-55{grid-template-columns:1fr 1fr}
+
+  .stat{background:var(--white);border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;box-shadow:var(--shadow);position:relative;overflow:hidden}
+  .stat .lbl{font-size:12.5px;color:var(--muted);font-weight:500}
+  .stat .num{font-size:30px;font-weight:800;color:var(--navy);line-height:1.1;margin-top:6px}
+  .stat .num small{font-size:14px;font-weight:600;color:var(--muted);margin-left:3px}
+  .stat .tag{position:absolute;top:16px;right:16px;font-size:18px;opacity:.5}
+  .stat.accent{border-top:3px solid var(--coral)}
+  .stat.gold{border-top:3px solid var(--gold)}
+
+  /* form */
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:12.5px;font-weight:600;color:var(--navy);margin-bottom:5px}
+  .field label .req{color:var(--coral)}
+  .control{
+    width:100%;padding:9px 12px;border:1px solid var(--line);border-radius:9px;background:var(--cream-2);
+    color:var(--ink);outline:none;transition:.15s;
+  }
+  .control:focus{border-color:var(--coral);background:#fff;box-shadow:0 0 0 3px var(--coral-soft)}
+  textarea.control{resize:vertical;min-height:64px;line-height:1.5}
+  .row2{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+  .row2.two{grid-template-columns:1fr 1fr}
+
+  /* buttons */
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 18px;border-radius:9px;font-size:14px;font-weight:600;transition:.15s}
+  .btn-primary{background:var(--coral);color:#fff}
+  .btn-primary:hover{background:#c4492f}
+  .btn-navy{background:var(--navy);color:#fff}
+  .btn-navy:hover{background:var(--navy-2)}
+  .btn-gold{background:var(--gold);color:#fff}
+  .btn-gold:hover{background:#a8761f}
+  .btn-ghost{background:var(--cream-2);color:var(--navy);border:1px solid var(--line)}
+  .btn-ghost:hover{background:var(--gold-soft)}
+  .btn-block{width:100%}
+  .btn-sm{padding:6px 12px;font-size:12.5px;border-radius:7px}
+  .btn-danger{background:var(--coral-soft);color:var(--coral)}
+  .btn-danger:hover{background:#ecc4bb}
+
+  /* student list */
+  .tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+  .tab{padding:6px 13px;border-radius:20px;font-size:12.5px;font-weight:600;background:var(--cream-2);color:var(--muted);border:1px solid var(--line)}
+  .tab.active{background:var(--navy);color:#fff;border-color:var(--navy)}
+  .stu{padding:13px 14px;border:1px solid var(--line);border-radius:11px;margin-bottom:9px;cursor:pointer;transition:.15s;background:var(--white)}
+  .stu:hover{border-color:var(--coral);background:var(--cream-2)}
+  .stu.sel{border-color:var(--coral);background:var(--coral-soft)}
+  .stu .top{display:flex;align-items:center;justify-content:space-between}
+  .stu .nm{font-weight:700;color:var(--navy);font-size:14.5px}
+  .stu .meta{font-size:12px;color:var(--muted);margin-top:3px}
+  .badge{font-size:10.5px;font-weight:700;padding:2px 9px;border-radius:20px}
+  .badge.active{background:var(--ok-soft);color:var(--ok)}
+  .badge.consult{background:var(--coral-soft);color:var(--coral)}
+  .badge.rest{background:var(--warn-soft);color:var(--warn)}
+
+  /* table */
+  table{width:100%;border-collapse:collapse;font-size:13px}
+  th{text-align:left;font-size:11.5px;letter-spacing:.04em;color:var(--muted);font-weight:700;text-transform:uppercase;padding:9px 10px;border-bottom:2px solid var(--line)}
+  td{padding:11px 10px;border-bottom:1px solid var(--line);color:var(--ink);vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  .empty{text-align:center;color:var(--muted);padding:34px 0;font-size:13px}
+
+  /* sliders / radar */
+  .slider-row{display:flex;align-items:center;gap:12px;margin-bottom:13px}
+  .slider-row .nm{width:128px;flex-shrink:0;font-size:13px;font-weight:600;color:var(--navy)}
+  .slider-row .nm small{display:block;font-weight:400;color:var(--muted);font-size:11px}
+  .slider-row input[type=range]{flex:1;accent-color:var(--coral);height:5px}
+  .slider-row .val{width:46px;text-align:right;font-weight:800;color:var(--coral);font-size:16px}
+  .radar-wrap{display:grid;place-items:center;padding:10px}
+  .radar-cap{text-align:center;margin-bottom:6px}
+
+  /* mark grid */
+  .marks{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .mark{width:38px;height:42px;border:1px solid var(--line);border-radius:8px;background:var(--cream-2);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--navy);cursor:pointer;transition:.12s}
+  .mark small{font-size:9px;color:var(--muted);font-weight:500}
+  .mark.wrong{background:var(--coral);color:#fff;border-color:var(--coral)}
+  .mark.wrong small{color:#ffd9d0}
+
+  /* commentary box */
+  .commentary{background:var(--cream-2);border:1px dashed var(--gold);border-radius:11px;padding:15px;font-size:13px;line-height:1.65;white-space:pre-wrap;color:var(--ink);min-height:120px}
+  .commentary.gen{border-style:solid;border-color:var(--line)}
+
+  /* toast */
+  .toast{position:fixed;bottom:26px;left:50%;transform:translateX(-50%) translateY(40px);background:var(--navy);color:#fff;padding:12px 22px;border-radius:30px;font-size:13.5px;font-weight:600;box-shadow:0 8px 30px rgba(0,0,0,.25);opacity:0;transition:.3s;z-index:100;pointer-events:none}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  /* modal */
+  .modal-bg{position:fixed;inset:0;background:rgba(30,43,71,.55);display:none;align-items:center;justify-content:center;z-index:90;padding:24px}
+  .modal-bg.open{display:flex}
+  .modal{background:#fff;border-radius:16px;max-width:760px;width:100%;max-height:88vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+  .modal-head{padding:18px 24px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#fff;z-index:2}
+  .modal-body{padding:22px 24px}
+  .x{font-size:22px;color:var(--muted);width:34px;height:34px;border-radius:50%;display:grid;place-items:center}
+  .x:hover{background:var(--cream-2);color:var(--navy)}
+
+  /* misc */
+  .hint{font-size:12px;color:var(--muted);background:var(--gold-soft);border-radius:9px;padding:10px 13px;line-height:1.55}
+  .hint b{color:var(--navy)}
+  .pill{display:inline-block;font-size:11px;font-weight:700;padding:2px 8px;border-radius:20px;background:var(--gold-soft);color:var(--gold)}
+  .divider{height:1px;background:var(--line);margin:18px 0}
+  .kpi-foot{font-size:11.5px;color:var(--muted);margin-top:4px}
+  .link{color:var(--coral);font-weight:600;cursor:pointer}
+  .link:hover{text-decoration:underline}
+  .activity{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:13px}
+  .activity:last-child{border-bottom:none}
+  .activity .who{font-weight:700;color:var(--navy)}
+  .activity .when{color:var(--muted);font-size:11.5px;white-space:nowrap}
+
+  /* print */
+  @media print{
+    .sidebar,.topbar,.no-print{display:none!important}
+    .main{display:block}
+    .content{padding:0;max-width:100%}
+    body{background:#fff}
+    .print-area{display:block!important}
+  }
+  .print-area{display:none}
+
+  /* responsive */
+  @media(max-width:980px){
+    .g-stats{grid-template-columns:1fr 1fr}
+    .g-2,.g-37,.g-55{grid-template-columns:1fr}
+    .row2{grid-template-columns:1fr}
+  }
+  @media(max-width:720px){
+    .sidebar{position:fixed;left:-260px;z-index:60;transition:.25s;box-shadow:6px 0 30px rgba(0,0,0,.3)}
+    .sidebar.show{left:0}
+    .content{padding:18px 16px 50px}
+    .topbar{padding:12px 16px}
+    .g-stats{grid-template-columns:1fr 1fr}
+    .menu-btn{display:grid!important}
+    .scrim{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:55}
+    .scrim.show{display:block}
+  }
+  .menu-btn{display:none;width:38px;height:38px;border-radius:9px;background:var(--cream-2);border:1px solid var(--line);place-items:center;font-size:18px;color:var(--navy)}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <div class="logo">
+        <div class="mark">홍</div>
+        <div>
+          <div class="name">홍보은영어학원</div>
+          <div class="sub">구문정독 · 원생 관리 시스템</div>
+        </div>
+      </div>
+    </div>
+    <div class="nav-group-label">관리</div>
+    <button class="nav-item active" data-page="dashboard"><span class="ic">▦</span> 대시보드</button>
+    <button class="nav-item" data-page="students"><span class="ic">👥</span> 학생 등록 및 관리</button>
+    <button class="nav-item" data-page="grades"><span class="ic">📈</span> 성적 처리 및 추적</button>
+    <button class="nav-item" data-page="leveltest"><span class="ic">🎯</span> 레벨 테스트 및 상담지</button>
+    <div class="nav-group-label">운영 관리</div>
+    <button class="nav-item" data-page="attendance"><span class="ic">📍</span> 출결현황판</button>
+    <button class="nav-item" data-page="report"><span class="ic">📋</span> 월말평가서</button>
+    <button class="nav-item" data-page="billing"><span class="ic">💳</span> 수강료 청구·수납</button>
+    <button class="nav-item" data-page="retest"><span class="ic">🔁</span> 단어재시 추적</button>
+    <button class="nav-item" data-page="pending"><span class="ic">⏳</span> 미완료 과제 적체</button>
+    <div class="nav-group-label">자료실 & 부속</div>
+    <button class="nav-item" data-page="kakao"><span class="ic">💬</span> 학부모 알림톡 작성</button>
+    <button class="nav-item" data-page="exams"><span class="ic">📄</span> 평가 시험지 인쇄</button>
+    <button class="nav-item" data-page="settings"><span class="ic">⚙️</span> 시스템 및 LLM 설정</button>
+    <div class="nav-foot">데이터는 이 브라우저(LocalStorage)에 저장돼요. 설정에서 백업/복원할 수 있어요.</div>
+  </aside>
+  <div class="scrim" id="scrim"></div>
+
+  <!-- MAIN -->
+  <div class="main">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:12px">
+        <button class="menu-btn" id="menuBtn">☰</button>
+        <div class="crumb">원생 관리 / <b id="crumb">대시보드</b></div>
+      </div>
+      <div class="term" id="term"></div>
+    </div>
+    <div class="content" id="content"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="modal-bg" id="modalBg"><div class="modal" id="modal"></div></div>
+<div class="print-area" id="printArea"></div>
+
+<script>
+/* ============ STORE ============ */
+const KEY='hbe_edutrack_v1';
+const REGIONS=['재원','상담중','휴원','퇴원'];
+const AREAS=[
+  {k:'vocab', nm:'어휘력', en:'Vocabulary'},
+  {k:'grammar', nm:'문법·어법', en:'Grammar'},
+  {k:'syntax', nm:'구문분석', en:'Syntax'},
+  {k:'reading', nm:'논리독해', en:'Reading'}
+];
+const LEVELS=['초등 영어 레벨테스트 (Elementary)','중등 기초 (Pre-Inter)','중등 심화 (Intermediate)','중등 구문정독 (Syntax)'];
+
+const seed=()=>{
+  const s1=uid(),s2=uid(),s3=uid(),s4=uid();
+  return{
+  students:[
+    {id:s1,name:'홍길동',school:'양지초',grade:'초6',phone:'010-1234-5678',pphone:'010-9876-5432',status:'상담중',fee:0,memo:'신규 레벨테스트 18점 → 상담 진행',created:'2026-06-13'},
+    {id:s2,name:'나초딩',school:'주엽초',grade:'초5',phone:'010-2222-3333',pphone:'010-4444-5555',status:'재원',fee:280000,memo:'레벨테스트 79점, 구문정독 기초반',created:'2026-06-12'},
+    {id:s3,name:'김중급',school:'정발중',grade:'중1',phone:'010-3333-1111',pphone:'010-7777-8888',status:'재원',fee:320000,memo:'레벨테스트 완료, 어법 보강 필요',created:'2026-06-10'},
+    {id:s4,name:'서중등',school:'오마중',grade:'중3',phone:'010-5555-6666',pphone:'010-1212-3434',status:'재원',fee:350000,memo:'레벨테스트 19점 → 기초부터',created:'2026-06-12'}
+  ],
+  grades:[],
+  consults:[],
+  // 단어재시 누적 (스터디플래너 단어테스트_결과/재시 기반) — 위험 신호 추적
+  retests:[
+    {id:uid(),sid:s3,name:'김중급',book:'능률보카 어원편 U12',result:'미통과',count:2,status:'다음시간 재시',date:'2026-06-11'},
+    {id:uid(),sid:s3,name:'김중급',book:'능률보카 어원편 U13',result:'미통과',count:1,status:'구두로 재시',date:'2026-06-12'},
+    {id:uid(),sid:s4,name:'서중등',book:'리딩튜터 Ch3',result:'통과',count:0,status:'재시 완료',date:'2026-06-12',score:'18/20'}
+  ],
+  // 과제 적체 (과제완료DB 미완료과제 기반) — 미완료 누적 추적
+  pending:[
+    {id:uid(),sid:s3,name:'김중급',type:'집과제',book:'시제ST1',items:['컴투맨 구문정독','워크북'],date:'2026-06-12'},
+    {id:uid(),sid:s3,name:'김중급',type:'집과제',book:'시제ST1',items:['워크북'],date:'2026-06-10'},
+    {id:uid(),sid:s2,name:'나초딩',type:'학원과제',book:'문법ST1',items:['영상강의+필기'],date:'2026-06-12'}
+  ],
+  // 월말평가서 (Apps Script 집계 결과 + AI 코멘트 수신/보관)
+  reports:[],
+  // 수강료 청구·수납 (결제선생 연동 대비 구조)
+  invoices:[],
+  settings:{apiKey:'',model:'claude-sonnet-4-6',academy:'홍보은영어학원',gasUrl:'',
+    // 결제선생 연동 (1단계는 표시용 / 2단계 API 연동 시 사용)
+    payssam:{shopName:'',accountUrl:'',apiConnected:false}
+  }
+}};
+function uid(){return Math.random().toString(36).slice(2,9)}
+let DB=load();
+function load(){try{const r=localStorage.getItem(KEY);return r?JSON.parse(r):seed()}catch(e){return seed()}}
+function save(){localStorage.setItem(KEY,JSON.stringify(DB))}
+function today(){return new Date().toISOString().slice(0,10)}
+
+/* ============ UI HELPERS ============ */
+const $=s=>document.querySelector(s);
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('show'),2200)}
+function esc(s){return(s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
+function badge(s){const m={'재원':'active','상담중':'consult','휴원':'rest','퇴원':'rest'};return `<span class="badge ${m[s]||'rest'}">${s}</span>`}
+function openModal(html){$('#modal').innerHTML=html;$('#modalBg').classList.add('open')}
+function closeModal(){$('#modalBg').classList.remove('open')}
+$('#modalBg').addEventListener('click',e=>{if(e.target.id==='modalBg')closeModal()});
+
+/* mobile menu */
+$('#menuBtn').onclick=()=>{$('#sidebar').classList.toggle('show');$('#scrim').classList.toggle('show')};
+$('#scrim').onclick=()=>{$('#sidebar').classList.remove('show');$('#scrim').classList.remove('show')};
+
+/* term banner */
+(function(){const d=new Date();$('#term').textContent=`${d.getFullYear()}학년도 · ${d.toLocaleDateString('ko-KR',{month:'long'})} 운영 · 데이터 ${DB.students.length}명`})();
+
+/* ============ ROUTER ============ */
+const PAGES={dashboard:renderDash,students:renderStudents,grades:renderGrades,leveltest:renderLevel,attendance:renderAttendance,report:renderReport,billing:renderBilling,retest:renderRetest,pending:renderPending,kakao:renderKakao,exams:renderExams,settings:renderSettings};
+const TITLES={dashboard:'대시보드',students:'학생 등록 및 관리',grades:'성적 처리 및 추적',leveltest:'레벨 테스트 및 상담지',attendance:'출결현황판',report:'월말평가서',billing:'수강료 청구·수납',retest:'단어재시 추적',pending:'미완료 과제 적체',kakao:'학부모 알림톡 작성',exams:'평가 시험지 인쇄',settings:'시스템 및 LLM 설정'};
+let cur='dashboard';
+function go(p){cur=p;$('#crumb').textContent=TITLES[p];document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',n.dataset.page===p));$('#content').scrollIntoView?window.scrollTo(0,0):0;PAGES[p]();$('#sidebar').classList.remove('show');$('#scrim').classList.remove('show')}
+document.querySelectorAll('.nav-item').forEach(n=>n.onclick=()=>go(n.dataset.page));
+
+/* ============ DASHBOARD ============ */
+function renderDash(){
+  const s=DB.students;
+  const active=s.filter(x=>x.status==='재원').length;
+  const consult=s.filter(x=>x.status==='상담중').length;
+  // 위험 신호 집계
+  const retestRisk=aggRetestRisk(); // 미통과 누적 학생
+  const pendRisk=aggPendingRisk();  // 미완료 적체 학생
+  const ym=new Date().toISOString().slice(0,7);
+  const unpaid=DB.invoices.filter(i=>i.month===ym&&i.status!=='입금완료'); // 이번 달 미납/미청구
+  const unpaidSum=unpaid.reduce((s,i)=>s+(i.amount||0),0);
+  const recent=[...DB.consults.map(c=>({t:'레벨 테스트 상담지 작성',w:c.name,d:c.date})),
+                ...DB.reports.map(r=>({t:`${r.month} 월말평가서 발행`,w:r.name,d:r.date})),
+                ...DB.grades.map(g=>({t:`성적 입력(${g.score}점)`,w:g.name,d:g.date}))]
+                .sort((a,b)=>b.d.localeCompare(a.d)).slice(0,5);
+  $('#content').innerHTML=`
+  <div class="page-head"><h1>대시보드</h1><p>오늘 ${today()} · 학원 운영 현황과 즉시 챙겨야 할 신호</p></div>
+  <div class="grid g-stats" style="margin-bottom:18px">
+    <div class="stat accent"><div class="lbl">재원생</div><div class="num">${active}<small>명</small></div><span class="tag">👥</span><div class="kpi-foot">전체 등록 ${s.length}명</div></div>
+    <div class="stat"><div class="lbl">이번 달 미납</div><div class="num">${unpaid.length}<small>건</small></div><span class="tag">💳</span><div class="kpi-foot">${unpaidSum?unpaidSum.toLocaleString()+'원':'미청구 포함'}</div></div>
+    <div class="stat gold"><div class="lbl">단어재시 적체</div><div class="num">${retestRisk.length}<small>명</small></div><span class="tag">🔁</span><div class="kpi-foot">미통과 누적 학생</div></div>
+    <div class="stat accent"><div class="lbl">과제 적체</div><div class="num">${pendRisk.length}<small>명</small></div><span class="tag">⏳</span><div class="kpi-foot">미완료 반복 학생</div></div>
+  </div>
+  ${unpaid.length?`<div class="card pad" style="margin-bottom:18px;border-left:3px solid var(--coral)">
+    <div class="card-title">💳 이번 달 미납·미청구 (${ym})</div>
+    <div class="card-sub">입금이 확인되지 않은 청구 건입니다</div>
+    ${unpaid.slice(0,6).map(i=>`<div class="activity"><span class="who">${esc(i.name)} <span style="font-weight:400;color:var(--muted)">${i.amount?i.amount.toLocaleString()+'원':''}</span></span><span class="badge ${i.status==='미납'?'consult':'rest'}">${esc(i.status)}</span></div>`).join('')}
+    <div style="margin-top:14px"><span class="link" onclick="go('billing')">수강료 청구·수납 열기 →</span></div>
+  </div>`:''}
+  <div class="grid g-2">
+    <div class="card pad">
+      <div class="card-title">🔁 단어재시 우선 관리 대상</div>
+      <div class="card-sub">미통과가 누적된 학생부터 챙기세요</div>
+      ${retestRisk.length? retestRisk.slice(0,5).map(r=>`<div class="activity"><span class="who">${esc(r.name)}</span><span style="color:var(--coral);font-weight:700">미통과 ${r.total}회</span></div>`).join('') : '<div class="empty">재시 적체 학생이 없습니다 👍</div>'}
+      <div style="margin-top:14px"><span class="link" onclick="go('retest')">단어재시 추적 열기 →</span></div>
+    </div>
+    <div class="card pad">
+      <div class="card-title">⏳ 과제 적체 우선 관리 대상</div>
+      <div class="card-sub">미완료 과제가 반복되는 학생부터 챙기세요</div>
+      ${pendRisk.length? pendRisk.slice(0,5).map(r=>`<div class="activity"><span class="who">${esc(r.name)}</span><span style="color:var(--warn);font-weight:700">미완료 ${r.count}건</span></div>`).join('') : '<div class="empty">과제 적체 학생이 없습니다 👍</div>'}
+      <div style="margin-top:14px"><span class="link" onclick="go('pending')">미완료 과제 적체 열기 →</span></div>
+    </div>
+  </div>
+  <div class="card pad" style="margin-top:18px">
+    <div class="card-title">최근 입력 활동</div>
+    <div class="card-sub">최근 등록·발행 내역</div>
+    ${recent.length? recent.map(r=>`<div class="activity"><span><span class="who">${esc(r.w)}</span> · ${esc(r.t)}</span><span class="when">${r.d}</span></div>`).join('') : '<div class="empty">아직 활동 내역이 없습니다</div>'}
+  </div>`;
+}
+// 단어재시 위험: 학생별 미통과 누적
+function aggRetestRisk(){
+  const m={};DB.retests.forEach(r=>{if(r.result==='미통과'){m[r.sid]=m[r.sid]||{sid:r.sid,name:r.name,total:0};m[r.sid].total+=(r.count||1)}});
+  return Object.values(m).sort((a,b)=>b.total-a.total);
+}
+// 과제 적체 위험: 학생별 미완료 건수
+function aggPendingRisk(){
+  const m={};DB.pending.forEach(p=>{m[p.sid]=m[p.sid]||{sid:p.sid,name:p.name,count:0};m[p.sid].count+=(p.items?.length||1)});
+  return Object.values(m).sort((a,b)=>b.count-a.count);
+}
+
+/* ============ STUDENTS ============ */
+let stuFilter='전체', stuSel=null;
+function renderStudents(){
+  $('#content').innerHTML=`
+  <div class="page-head" style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap">
+    <div><h1>학생 등록 및 목록 관리</h1><p>새 원생을 등록하고, 재원·상담 상태를 개별로 관리합니다</p></div>
+    <button class="btn btn-ghost" id="importNotion" style="white-space:nowrap">⬇ Notion에서 불러오기</button>
+  </div>
+  <div class="grid g-37">
+    <div class="card pad">
+      <div class="card-title" id="stuCount"></div>
+      <div class="tabs" id="stuTabs"></div>
+      <div id="stuList"></div>
+    </div>
+    <div class="card pad">
+      <div class="card-title">신규 학생 등록</div>
+      <div class="card-sub">필수 항목(*)만 채워도 등록할 수 있어요</div>
+      <div class="row2 two">
+        <div class="field"><label>이름 <span class="req">*</span></label><input class="control" id="f_name" placeholder="예: 김민수"></div>
+        <div class="field"><label>학교</label><input class="control" id="f_school" placeholder="학교 또는 직접 입력"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>학년</label><input class="control" id="f_grade" placeholder="예: 중1"></div>
+        <div class="field"><label>학생 연락처</label><input class="control" id="f_phone" placeholder="010-0000-0000"></div>
+        <div class="field"><label>상태</label><select class="control" id="f_status">${REGIONS.map(r=>`<option>${r}</option>`).join('')}</select></div>
+      </div>
+      <div class="field"><label>학부모 연락처</label><input class="control" id="f_pphone" placeholder="010-0000-0000"></div>
+      <div class="field"><label>월 수강료 (원)</label><input class="control" id="f_fee" type="number" min="0" step="10000" placeholder="예: 320000"></div>
+      <div class="field"><label>학생 관리 종합 메모</label><textarea class="control" id="f_memo" placeholder="수강 이력, 학습 태도, 보강 필요 영역 등을 자유롭게 기입"></textarea></div>
+      <button class="btn btn-primary btn-block" id="addStu">신규 원생 정보 추가</button>
+    </div>
+  </div>`;
+  drawStuTabs();drawStuList();
+  $('#importNotion').onclick=async()=>{
+    if(!DB.settings.gasUrl){toast('먼저 설정에서 Apps Script URL을 넣어주세요');go('settings');return}
+    toast('Notion에서 학생을 불러오는 중...');
+    const r=await fetchNotionStudents();
+    if(!r.ok){toast('불러오기 실패: '+r.error);return}
+    const res=importNotionStudents(r.students);
+    renderStudents();toast(`불러오기 완료 — 신규 ${res.added}명, 갱신 ${res.updated}명`);
+  };
+  $('#addStu').onclick=()=>{
+    const name=$('#f_name').value.trim();
+    if(!name){toast('이름을 입력해주세요');$('#f_name').focus();return}
+    DB.students.unshift({id:uid(),name,school:$('#f_school').value.trim(),grade:$('#f_grade').value.trim(),phone:$('#f_phone').value.trim(),pphone:$('#f_pphone').value.trim(),status:$('#f_status').value,fee:parseInt($('#f_fee').value)||0,memo:$('#f_memo').value.trim(),created:today()});
+    save();renderStudents();toast(`${name} 학생을 등록했어요`);
+  };
+}
+function filtered(){return stuFilter==='전체'?DB.students:DB.students.filter(s=>s.status===stuFilter)}
+function drawStuTabs(){
+  const tabs=['전체',...REGIONS];
+  $('#stuTabs').innerHTML=tabs.map(t=>`<button class="tab ${t===stuFilter?'active':''}" data-f="${t}">${t}</button>`).join('');
+  document.querySelectorAll('#stuTabs .tab').forEach(b=>b.onclick=()=>{stuFilter=b.dataset.f;drawStuTabs();drawStuList()});
+}
+function drawStuList(){
+  const list=filtered();
+  $('#stuCount').textContent=`원생 목록 (${list.length}명)`;
+  $('#stuList').innerHTML=list.length?list.map(s=>`
+    <div class="stu ${stuSel===s.id?'sel':''}" data-id="${s.id}">
+      <div class="top"><span class="nm">${esc(s.name)}</span>${badge(s.status)}</div>
+      <div class="meta">${esc(s.school||'-')} ${esc(s.grade||'')} · ${esc(s.memo||'메모 없음')}</div>
+    </div>`).join(''):'<div class="empty">해당 상태의 학생이 없습니다</div>';
+  document.querySelectorAll('#stuList .stu').forEach(el=>el.onclick=()=>openStu(el.dataset.id));
+}
+function openStu(id){
+  const s=DB.students.find(x=>x.id===id);if(!s)return;
+  openModal(`
+    <div class="modal-head"><h3>${esc(s.name)} 학생 정보</h3><button class="x" onclick="closeModal()">×</button></div>
+    <div class="modal-body">
+      <div class="row2 two">
+        <div class="field"><label>이름</label><input class="control" id="e_name" value="${esc(s.name)}"></div>
+        <div class="field"><label>학교</label><input class="control" id="e_school" value="${esc(s.school)}"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>학년</label><input class="control" id="e_grade" value="${esc(s.grade)}"></div>
+        <div class="field"><label>상태</label><select class="control" id="e_status">${REGIONS.map(r=>`<option ${r===s.status?'selected':''}>${r}</option>`).join('')}</select></div>
+        <div class="field"><label>학생 연락처</label><input class="control" id="e_phone" value="${esc(s.phone)}"></div>
+      </div>
+      <div class="field"><label>학부모 연락처</label><input class="control" id="e_pphone" value="${esc(s.pphone)}"></div>
+      <div class="field"><label>월 수강료 (원)</label><input class="control" id="e_fee" type="number" min="0" step="10000" value="${s.fee||0}"></div>
+      <div class="field"><label>종합 메모</label><textarea class="control" id="e_memo">${esc(s.memo)}</textarea></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:6px">
+        <button class="btn btn-danger" onclick="delStu('${s.id}')">학생 삭제</button>
+        <button class="btn btn-primary" onclick="saveStu('${s.id}')">변경사항 저장</button>
+      </div>
+    </div>`);
+}
+function saveStu(id){const s=DB.students.find(x=>x.id===id);Object.assign(s,{name:$('#e_name').value.trim(),school:$('#e_school').value.trim(),grade:$('#e_grade').value.trim(),status:$('#e_status').value,phone:$('#e_phone').value.trim(),pphone:$('#e_pphone').value.trim(),fee:parseInt($('#e_fee').value)||0,memo:$('#e_memo').value.trim()});save();closeModal();renderStudents();toast('저장했어요')}
+function delStu(id){if(!confirm('이 학생을 삭제할까요? 되돌릴 수 없어요.'))return;DB.students=DB.students.filter(x=>x.id!==id);save();closeModal();renderStudents();toast('삭제했어요')}
+
+/* ============ GRADES ============ */
+function renderGrades(){
+  $('#content').innerHTML=`
+  <div class="page-head"><h1>성적 처리 및 추적</h1><p>시험 점수를 기록하고 학생별 성취 추이를 추적합니다</p></div>
+  <div class="card pad" style="margin-bottom:18px">
+    <div class="card-title">성적 점수 기록하기</div>
+    <div class="card-sub">학생을 선택하고 시험 정보와 점수를 입력하세요</div>
+    <div class="row2">
+      <div class="field"><label>학생 <span class="req">*</span></label><select class="control" id="g_stu">${DB.students.map(s=>`<option value="${s.id}">${esc(s.name)} (${esc(s.grade||'')})</option>`).join('')}</select></div>
+      <div class="field"><label>시험 유형</label><input class="control" id="g_type" placeholder="예: 6월 단어시험 / 구문독해 평가"></div>
+      <div class="field"><label>점수 (100점 만점)</label><input class="control" id="g_score" type="number" min="0" max="100" placeholder="0~100"></div>
+    </div>
+    <div class="field"><label>메모 및 코멘트</label><input class="control" id="g_memo" placeholder="오답 경향, 보강 포인트 등"></div>
+    <button class="btn btn-primary" id="addGrade">성적 기록하기</button>
+  </div>
+  <div class="card pad" style="margin-bottom:18px">
+    <div class="card-title">학습 성취 성적 추이</div>
+    <div class="card-sub">학생을 선택하면 시간순 점수 변화를 보여줍니다</div>
+    <div style="margin-bottom:12px"><select class="control" style="max-width:260px" id="g_trendStu"><option value="">학생 선택...</option>${DB.students.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('')}</select></div>
+    <div id="trend"></div>
+  </div>
+  <div class="card pad">
+    <div class="card-title">누적 성적 이력</div>
+    <div class="card-sub">전체 기록된 성적 (${DB.grades.length}건)</div>
+    <table><thead><tr><th>시험일</th><th>학생</th><th>유형</th><th>점수</th><th>상태</th><th>메모</th><th></th></tr></thead><tbody id="gradeBody"></tbody></table>
+  </div>`;
+  drawGrades();drawTrend('');
+  $('#addGrade').onclick=()=>{
+    const sid=$('#g_stu').value,sc=parseInt($('#g_score').value);
+    if(isNaN(sc)){toast('점수를 입력해주세요');return}
+    const stu=DB.students.find(s=>s.id===sid);
+    DB.grades.unshift({id:uid(),sid,name:stu.name,type:$('#g_type').value.trim(),score:sc,memo:$('#g_memo').value.trim(),date:today()});
+    save();renderGrades();toast(`${stu.name} 성적 ${sc}점 기록 완료`);
+  };
+  $('#g_trendStu').onchange=e=>drawTrend(e.target.value);
+}
+function drawGrades(){
+  $('#gradeBody').innerHTML=DB.grades.length?DB.grades.map(g=>`
+    <tr><td>${g.date}</td><td><b>${esc(g.name)}</b></td><td>${esc(g.type||'-')}</td>
+    <td style="font-weight:800;color:${g.score<60?'var(--coral)':'var(--navy)'}">${g.score}</td>
+    <td>${g.score<60?'<span class="badge consult">재시험</span>':'<span class="badge active">통과</span>'}</td>
+    <td style="color:var(--muted);font-size:12px">${esc(g.memo||'-')}</td>
+    <td><button class="btn btn-sm btn-danger" onclick="delGrade('${g.id}')">삭제</button></td></tr>`).join('')
+    :'<tr><td colspan="7" class="empty">기록된 성적이 없습니다</td></tr>';
+}
+function delGrade(id){DB.grades=DB.grades.filter(g=>g.id!==id);save();renderGrades();toast('삭제했어요')}
+function drawTrend(sid){
+  const box=$('#trend');if(!sid){box.innerHTML='<div class="empty">학생을 선택하면 추이가 표시됩니다</div>';return}
+  const rows=DB.grades.filter(g=>g.sid===sid).sort((a,b)=>a.date.localeCompare(b.date));
+  if(!rows.length){box.innerHTML='<div class="empty">이 학생의 기록된 성적 데이터가 없습니다</div>';return}
+  box.innerHTML=lineChart(rows.map(r=>({x:r.date.slice(5),y:r.score})));
+}
+function lineChart(pts){
+  const W=620,H=200,pad=34;const max=100,min=0;
+  const xs=(i)=>pad+(pts.length<2?0:i*(W-pad*2)/(pts.length-1));
+  const ys=(v)=>H-pad-((v-min)/(max-min))*(H-pad*2);
+  const path=pts.map((p,i)=>`${i?'L':'M'}${xs(i)},${ys(p.y)}`).join(' ');
+  const dots=pts.map((p,i)=>`<circle cx="${xs(i)}" cy="${ys(p.y)}" r="4" fill="#D9543C"/><text x="${xs(i)}" y="${ys(p.y)-10}" font-size="11" fill="#1E2B47" text-anchor="middle" font-weight="700">${p.y}</text><text x="${xs(i)}" y="${H-12}" font-size="10" fill="#7A8190" text-anchor="middle">${p.x}</text>`).join('');
+  const grid=[0,25,50,75,100].map(v=>`<line x1="${pad}" y1="${ys(v)}" x2="${W-pad}" y2="${ys(v)}" stroke="#E4DCC9"/><text x="${pad-6}" y="${ys(v)+3}" font-size="9" fill="#7A8190" text-anchor="end">${v}</text>`).join('');
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:${W}px"><line x1="${pad}" y1="${ys(60)}" x2="${W-pad}" y2="${ys(60)}" stroke="#D9543C" stroke-dasharray="4" opacity="0.5"/>${grid}<path d="${path}" fill="none" stroke="#1E2B47" stroke-width="2.5"/>${dots}</svg>`;
+}
+
+/* ============ LEVEL TEST ============ */
+let scores={vocab:60,grammar:60,syntax:60,reading:60}, wrongs={}, lvCommentary='';
+function renderLevel(){
+  scores={vocab:60,grammar:60,syntax:60,reading:60};wrongs={};lvCommentary='';
+  $('#content').innerHTML=`
+  <div class="page-head"><h1>레벨 테스트 성적 분석 및 프리미엄 상담지</h1><p>4개 역량 점수를 입력하면 역량 레이더가 그려지고, AI 또는 규칙 기반으로 상담 코멘트를 자동 생성합니다</p></div>
+  <div class="grid g-55" style="margin-bottom:18px">
+    <div class="card pad">
+      <div class="card-title">신규 테스트 성적 입력</div>
+      <div class="card-sub">학생과 레벨테스트지를 선택하고 영역별 점수를 조정하세요</div>
+      <div class="row2 two">
+        <div class="field"><label>학생 <span class="req">*</span></label><select class="control" id="lv_stu">${DB.students.map(s=>`<option value="${s.id}">${esc(s.name)} (${esc(s.grade||'')})</option>`).join('')}</select></div>
+        <div class="field"><label>레벨테스트지</label><select class="control" id="lv_level">${LEVELS.map(l=>`<option>${l}</option>`).join('')}</select></div>
+      </div>
+      <div class="divider"></div>
+      <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:12px">영역별 득점율 <span class="pill">실시간 차트 연동</span></div>
+      ${AREAS.map(a=>`<div class="slider-row"><div class="nm">${a.nm}<small>${a.en}</small></div><input type="range" min="0" max="100" value="60" data-k="${a.k}"><div class="val" id="v_${a.k}">60</div></div>`).join('')}
+    </div>
+    <div class="card pad">
+      <div class="radar-cap"><div class="card-title">실시간 방사형(Radar) 역량 분석</div><div class="card-sub">점수 변경 시 즉시 반영됩니다</div></div>
+      <div class="radar-wrap" id="radar"></div>
+    </div>
+  </div>
+  <div class="card pad" style="margin-bottom:18px">
+    <div class="card-title">오답 마킹 채점 도우미</div>
+    <div class="card-sub">학생이 틀린 문항 번호를 클릭하세요 (20문항 기준, 영역 자동 분류)</div>
+    <div class="marks" id="marks"></div>
+  </div>
+  <div class="card pad" style="margin-bottom:18px">
+    <div class="card-title">AI 상담 코멘트 생성</div>
+    <div class="card-sub">점수와 오답을 바탕으로 학부모 대면용 상담 코멘트를 자동 작성합니다</div>
+    <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+      <button class="btn btn-navy" id="genBtn">코멘트 생성하기</button>
+      <span class="hint" style="flex:1;min-width:200px">설정에 <b>Claude API 키</b>를 넣으면 AI가, 없으면 규칙 기반으로 작성돼요.</span>
+    </div>
+    <div class="commentary" id="comm">점수를 조정하고 [코멘트 생성하기]를 누르면 여기에 진단이 표시됩니다.</div>
+  </div>
+  <div class="card pad" style="margin-bottom:18px">
+    <div class="row2">
+      <div class="field"><label>추천 보강 수강반</label><input class="control" id="lv_class" placeholder="예: 중등 구문정독 기초반"></div>
+      <div class="field"><label>추천 교재</label><input class="control" id="lv_book" placeholder="예: 천일문 입문 / 어법끝 Start"></div>
+      <div class="field"><label>상담일</label><input class="control" id="lv_date" type="date" value="${today()}"></div>
+    </div>
+    <div class="field"><label>원장 종합 메모</label><textarea class="control" id="lv_note" placeholder="학부모 상담 시 강조할 내용을 기입"></textarea></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-gold" id="saveConsult">상담지 저장</button>
+      <button class="btn btn-primary" id="savePrint">저장 및 즉시 인쇄</button>
+    </div>
+  </div>
+  <div class="card pad">
+    <div class="card-title">누적 상담 리스트 (${DB.consults.length}건)</div>
+    <table><thead><tr><th>날짜</th><th>학생</th><th>레벨</th><th>추천반</th><th>교재</th><th>리포트</th><th></th></tr></thead><tbody id="consultBody"></tbody></table>
+  </div>`;
+  drawRadar();drawMarks();drawConsults();
+  document.querySelectorAll('input[type=range]').forEach(r=>r.oninput=()=>{scores[r.dataset.k]=+r.value;$('#v_'+r.dataset.k).textContent=r.value;drawRadar()});
+  $('#genBtn').onclick=genCommentary;
+  $('#saveConsult').onclick=()=>saveConsult(false);
+  $('#savePrint').onclick=()=>saveConsult(true);
+}
+function drawRadar(){
+  const S=260,c=S/2,R=92;const n=AREAS.length;
+  const pt=(i,r)=>{const a=-Math.PI/2+i*2*Math.PI/n;return[c+r*Math.cos(a),c+r*Math.sin(a)]};
+  let rings='';[0.25,0.5,0.75,1].forEach(f=>{rings+=`<polygon points="${AREAS.map((_,i)=>pt(i,R*f).join(',')).join(' ')}" fill="none" stroke="#E4DCC9"/>`});
+  let axes='',labels='';AREAS.forEach((a,i)=>{const[x,y]=pt(i,R);axes+=`<line x1="${c}" y1="${c}" x2="${x}" y2="${y}" stroke="#E4DCC9"/>`;const[lx,ly]=pt(i,R+24);labels+=`<text x="${lx}" y="${ly}" font-size="11" font-weight="700" fill="#1E2B47" text-anchor="middle">${a.nm}</text><text x="${lx}" y="${ly+13}" font-size="10" fill="#D9543C" text-anchor="middle" font-weight="700">${scores[a.k]}</text>`});
+  const poly=AREAS.map((a,i)=>pt(i,R*scores[a.k]/100).join(',')).join(' ');
+  $('#radar').innerHTML=`<svg viewBox="0 0 ${S} ${S}" style="width:100%;max-width:300px">${rings}${axes}<polygon points="${poly}" fill="rgba(217,84,60,.22)" stroke="#D9543C" stroke-width="2.5"/>${AREAS.map((a,i)=>{const[x,y]=pt(i,R*scores[a.k]/100);return`<circle cx="${x}" cy="${y}" r="4" fill="#D9543C"/>`}).join('')}${labels}</svg>`;
+}
+const MARK_MAP=['vocab','vocab','vocab','vocab','vocab','grammar','grammar','grammar','grammar','grammar','syntax','syntax','syntax','syntax','syntax','reading','reading','reading','reading','reading'];
+function drawMarks(){
+  $('#marks').innerHTML=Array.from({length:20},(_,i)=>{const n=i+1;const ar=AREAS.find(a=>a.k===MARK_MAP[i]);return `<div class="mark ${wrongs[n]?'wrong':''}" data-n="${n}">${n}<small>${ar.nm.slice(0,2)}</small></div>`}).join('');
+  document.querySelectorAll('#marks .mark').forEach(m=>m.onclick=()=>{const n=m.dataset.n;wrongs[n]=!wrongs[n];drawMarks()});
+}
+function buildRuleCommentary(){
+  const stu=DB.students.find(s=>s.id===$('#lv_stu').value);
+  const lv=$('#lv_level').value;
+  const order=[...AREAS].sort((a,b)=>scores[a.k]-scores[b.k]);
+  const weak=order[0],weak2=order[1],strong=order[order.length-1];
+  const wrongList=Object.keys(wrongs).filter(k=>wrongs[k]).map(Number).sort((a,b)=>a-b);
+  const tone=v=>v>=85?'매우 우수':v>=70?'안정적':v>=55?'보통':v>=40?'보강 필요':'집중 보강 시급';
+  const lines=AREAS.map(a=>`· ${a.nm}(${a.en}): ${scores[a.k]}점 — ${tone(scores[a.k])}`);
+  const avg=Math.round(AREAS.reduce((s,a)=>s+scores[a.k],0)/AREAS.length);
+  return `[${esc(stu?.name||'학생')} · ${lv}] 레벨테스트 진단 (평균 ${avg}점)
+
+■ 영역별 진단
+${lines.join('\n')}
+
+■ 종합 소견
+강점은 ${strong.nm}(${scores[strong.k]}점)이며, 가장 보강이 필요한 영역은 ${weak.nm}(${scores[weak.k]}점)와 ${weak2.nm}(${scores[weak2.k]}점)입니다. 본원의 구문정독(構文精讀) 방식은 문장 구조를 끊어 읽으며 ${weak.nm}을(를) 체계적으로 끌어올리는 데 강점이 있습니다.
+
+■ 오답 문항
+${wrongList.length?`틀린 문항: ${wrongList.join(', ')}번 — 해당 유형 반복 훈련 권장`:'표시된 오답 없음'}
+
+■ 권장 학습 방향
+${scores.syntax<60?'구문 분석 기초부터 단계적으로 쌓아 독해 속도와 정확도를 함께 개선하는 것을 권합니다.':'구문 독해 정확도가 안정적이므로, 심화 지문 적용과 어휘 확장을 병행하면 좋겠습니다.'} 주 단위 단어시험과 구문 끊어읽기 점검을 통해 꾸준히 관리하겠습니다.`;
+}
+async function genCommentary(){
+  const comm=$('#comm');comm.classList.add('gen');
+  const key=DB.settings.apiKey;
+  if(!key){lvCommentary=buildRuleCommentary();comm.textContent=lvCommentary;toast('규칙 기반 코멘트를 생성했어요 (API 키 없음)');return}
+  comm.textContent='AI가 상담 코멘트를 작성 중입니다...';
+  const stu=DB.students.find(s=>s.id===$('#lv_stu').value);
+  const wrongList=Object.keys(wrongs).filter(k=>wrongs[k]);
+  const prompt=`너는 '홍보은영어학원'(구문정독 전문 영어학원) 원장이다. 아래 레벨테스트 결과로 학부모 대면 상담지에 들어갈 따뜻하면서 전문적인 상담 코멘트를 한국어로 작성하라. 본원의 핵심 방법론인 '구문정독(문장 구조를 끊어 읽는 정독)'을 자연스럽게 녹여라.
+학생: ${stu?.name} (${stu?.grade})
+레벨테스트: ${$('#lv_level').value}
+점수 - 어휘력:${scores.vocab}, 문법어법:${scores.grammar}, 구문분석:${scores.syntax}, 논리독해:${scores.reading} (각 100점 만점)
+틀린 문항: ${wrongList.join(', ')||'없음'}
+형식: 영역별 진단 → 종합 소견 → 권장 학습 방향. 6~9문장.`;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:DB.settings.model||'claude-sonnet-4-6',max_tokens:1000,messages:[{role:'user',content:prompt}]})});
+    const data=await res.json();
+    if(data.error){throw new Error(data.error.message)}
+    lvCommentary=data.content.filter(c=>c.type==='text').map(c=>c.text).join('\n');
+    comm.textContent=lvCommentary;toast('AI 상담 코멘트를 생성했어요');
+  }catch(e){lvCommentary=buildRuleCommentary();comm.textContent=lvCommentary+`\n\n(AI 호출 실패: ${e.message} — 규칙 기반으로 대체)`;toast('AI 호출 실패 → 규칙 기반으로 대체')}
+}
+function saveConsult(print){
+  const stu=DB.students.find(s=>s.id===$('#lv_stu').value);
+  if(!stu){toast('학생을 선택해주세요');return}
+  if(!lvCommentary)lvCommentary=buildRuleCommentary();
+  const c={id:uid(),sid:stu.id,name:stu.name,grade:stu.grade,level:$('#lv_level').value,scores:{...scores},wrongs:Object.keys(wrongs).filter(k=>wrongs[k]),className:$('#lv_class').value.trim(),book:$('#lv_book').value.trim(),note:$('#lv_note').value.trim(),commentary:lvCommentary,date:$('#lv_date').value||today()};
+  DB.consults.unshift(c);save();
+  toast(print?'저장 후 인쇄 창을 엽니다':'상담지를 저장했어요');
+  if(print)printConsult(c.id);else renderLevel();
+}
+function drawConsults(){
+  $('#consultBody').innerHTML=DB.consults.length?DB.consults.map(c=>`
+    <tr><td>${c.date}</td><td><b>${esc(c.name)}</b></td><td style="font-size:12px">${esc((c.level||'').replace(/\(.*\)/,''))}</td>
+    <td style="font-size:12px">${esc(c.className||'-')}</td><td style="font-size:12px">${esc(c.book||'-')}</td>
+    <td><button class="btn btn-sm btn-ghost" onclick="printConsult('${c.id}')">인쇄 / PDF</button></td>
+    <td><button class="btn btn-sm btn-danger" onclick="delConsult('${c.id}')">삭제</button></td></tr>`).join('')
+    :'<tr><td colspan="7" class="empty">작성된 상담지가 없습니다</td></tr>';
+}
+function delConsult(id){if(!confirm('이 상담지를 삭제할까요?'))return;DB.consults=DB.consults.filter(c=>c.id!==id);save();renderLevel();toast('삭제했어요')}
+function printConsult(id){
+  const c=DB.consults.find(x=>x.id===id);if(!c)return;
+  const avg=Math.round(AREAS.reduce((s,a)=>s+(c.scores[a.k]||0),0)/AREAS.length);
+  $('#printArea').innerHTML=`
+  <div style="font-family:'Pretendard',sans-serif;color:#27313F;padding:38px 30px;max-width:720px;margin:0 auto">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #1E2B47;padding-bottom:14px;margin-bottom:22px">
+      <div><div style="font-size:13px;color:#BC8A30;font-weight:700;letter-spacing:.05em">홍보은영어학원 · 구문정독</div>
+      <div style="font-size:25px;font-weight:800;color:#1E2B47;margin-top:4px">레벨 테스트 진단 상담지</div></div>
+      <div style="text-align:right;font-size:12px;color:#7A8190">발행일 ${c.date}</div>
+    </div>
+    <table style="width:100%;font-size:13px;margin-bottom:22px"><tbody>
+      <tr><td style="padding:6px 0;width:90px;color:#7A8190">학생명</td><td style="font-weight:700">${esc(c.name)} (${esc(c.grade||'')})</td>
+      <td style="padding:6px 0;width:90px;color:#7A8190">테스트</td><td>${esc(c.level)}</td></tr>
+      <tr><td style="color:#7A8190">평균 점수</td><td style="font-weight:800;color:#D9543C">${avg} / 100</td>
+      <td style="color:#7A8190">추천반</td><td>${esc(c.className||'-')}</td></tr>
+    </tbody></table>
+    <div style="display:flex;gap:24px;margin-bottom:22px;align-items:center">
+      <div style="flex:1">
+        ${AREAS.map(a=>{const v=c.scores[a.k]||0;return `<div style="margin-bottom:9px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span style="font-weight:600">${a.nm}</span><span style="font-weight:700;color:#D9543C">${v}</span></div><div style="height:8px;background:#EDE0C4;border-radius:6px"><div style="height:100%;width:${v}%;background:#1E2B47;border-radius:6px"></div></div></div>`}).join('')}
+      </div>
+      <div style="width:200px;flex-shrink:0">${printRadar(c.scores)}</div>
+    </div>
+    <div style="background:#FBF6EC;border:1px solid #E4DCC9;border-radius:10px;padding:16px;margin-bottom:18px">
+      <div style="font-weight:700;color:#1E2B47;margin-bottom:8px;font-size:14px">📋 원장 상담 소견</div>
+      <div style="white-space:pre-wrap;font-size:12.5px;line-height:1.7">${esc(c.commentary)}</div>
+    </div>
+    ${c.book||c.note?`<div style="font-size:12.5px;line-height:1.7">${c.book?`<div><b>추천 교재</b> · ${esc(c.book)}</div>`:''}${c.note?`<div style="margin-top:6px"><b>종합 메모</b> · ${esc(c.note)}</div>`:''}</div>`:''}
+    <div style="margin-top:30px;text-align:center;font-size:11px;color:#7A8190;border-top:1px solid #E4DCC9;padding-top:12px">홍보은영어학원 · 일산/고양 구문정독 전문 · 본 상담지는 진단 참고용입니다</div>
+  </div>`;
+  window.print();
+}
+function printRadar(sc){
+  const S=190,c=S/2,R=64,n=AREAS.length;
+  const pt=(i,r)=>{const a=-Math.PI/2+i*2*Math.PI/n;return[c+r*Math.cos(a),c+r*Math.sin(a)]};
+  let rings='';[0.5,1].forEach(f=>rings+=`<polygon points="${AREAS.map((_,i)=>pt(i,R*f).join(',')).join(' ')}" fill="none" stroke="#E4DCC9"/>`);
+  let labels='';AREAS.forEach((a,i)=>{const[x,y]=pt(i,R+15);labels+=`<text x="${x}" y="${y}" font-size="9" font-weight="700" fill="#1E2B47" text-anchor="middle">${a.nm}</text>`});
+  const poly=AREAS.map((a,i)=>pt(i,R*(sc[a.k]||0)/100).join(',')).join(' ');
+  return `<svg viewBox="0 0 ${S} ${S}" style="width:100%">${rings}<polygon points="${poly}" fill="rgba(217,84,60,.25)" stroke="#D9543C" stroke-width="2"/>${labels}</svg>`;
+}
+
+/* ============ EXAMS ============ */
+function renderExams(){
+  $('#content').innerHTML=`
+  <div class="page-head"><h1>평가 시험지 인쇄</h1><p>레벨별 시험지를 미리보고 인쇄·PDF로 저장합니다</p></div>
+  <div class="card pad">
+    <div class="card-title">영어과 평가 자료실</div>
+    <div class="card-sub">각 시험지를 [미리보기]로 확인 후 [인쇄/PDF]로 출력하세요</div>
+    <table><thead><tr><th>레벨테스트지</th><th>대상</th><th style="text-align:right">실행</th></tr></thead><tbody>
+    ${LEVELS.map((l,i)=>`<tr><td><b>${esc(l)}</b></td><td style="color:var(--muted);font-size:12.5px">${['초등 5~6','중1~2','중2~3','중3 심화'][i]||'-'}</td>
+    <td style="text-align:right"><button class="btn btn-sm btn-ghost" onclick="previewExam(${i})">미리보기</button> <button class="btn btn-sm btn-primary" onclick="printExam(${i})">인쇄/PDF</button></td></tr>`).join('')}
+    </tbody></table>
+    <div class="hint" style="margin-top:16px">실제 시험지 문항은 너의 구문정독 문항 생성 파이프라인(Supabase/Claude API)과 연결해 채워 넣으면 돼요. 지금은 샘플 양식이 들어가 있어요.</div>
+  </div>`;
+}
+function examSample(i){
+  return `<div style="font-family:'Pretendard',sans-serif;padding:34px;max-width:720px;margin:0 auto;color:#27313F">
+    <div style="display:flex;justify-content:space-between;border-bottom:2px solid #1E2B47;padding-bottom:10px;margin-bottom:18px">
+      <div><div style="font-size:18px;font-weight:800;color:#1E2B47">${esc(LEVELS[i])}</div>
+      <div style="font-size:11px;color:#7A8190;margin-top:3px">홍보은영어학원 · 구문정독 레벨테스트</div></div>
+      <div style="font-size:12px;color:#7A8190;text-align:right">이름 _______<br>점수 ____ / 100</div></div>
+    <div style="font-size:13px;font-weight:700;color:#D9543C;margin-bottom:8px">Ⅰ. 어휘 및 구문 분석 (Vocab & Syntax)</div>
+    ${[1,2,3,4,5].map(n=>`<div style="margin-bottom:14px;font-size:13px"><b>${n}.</b> 다음 문장에서 주어(S)와 동사(V)를 찾아 끊어 읽으시오.<br><div style="border-bottom:1px solid #ccc;height:22px;margin-top:6px"></div></div>`).join('')}
+    <div style="font-size:13px;font-weight:700;color:#D9543C;margin:18px 0 8px">Ⅱ. 논리 독해 (Reading)</div>
+    ${[6,7,8].map(n=>`<div style="margin-bottom:14px;font-size:13px"><b>${n}.</b> 빈칸에 들어갈 가장 적절한 것을 고르시오. ( )<br><div style="font-size:12px;color:#555;margin-top:5px">① ______ ② ______ ③ ______ ④ ______</div></div>`).join('')}
+    <div style="margin-top:24px;text-align:center;font-size:11px;color:#7A8190">— 샘플 양식 · 실제 문항은 문항 DB와 연동 —</div>
+  </div>`;
+}
+function previewExam(i){openModal(`<div class="modal-head"><h3>시험지 미리보기</h3><button class="x" onclick="closeModal()">×</button></div><div class="modal-body" style="background:#fff">${examSample(i)}</div>`)}
+function printExam(i){$('#printArea').innerHTML=examSample(i);window.print()}
+
+/* ============ 출결현황판 (Notion 스터디플래너 실시간) ============ */
+function renderAttendance(){
+  const d=$('#att_date')?.value||today();
+  $('#content').innerHTML=`
+  <div class="page-head" style="display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap">
+    <div><h1>출결현황판</h1><p>스터디플래너의 출결(정시/지각/결석)을 날짜별로 읽어옵니다 · 읽기 전용</p></div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <input class="control" id="att_date" type="date" value="${d}" style="width:160px">
+      <button class="btn btn-primary" id="att_load" style="white-space:nowrap">불러오기</button>
+    </div>
+  </div>
+  <div id="att_body"><div class="empty">날짜를 고르고 [불러오기]를 누르세요.</div></div>`;
+  $('#att_load').onclick=loadAttendance;
+  // 진입 시 자동 1회 로드 (URL 있을 때만)
+  if(DB.settings.gasUrl)loadAttendance();
+}
+async function loadAttendance(){
+  const date=$('#att_date').value||today();
+  const box=$('#att_body');
+  if(!DB.settings.gasUrl){box.innerHTML='<div class="card pad"><div class="empty">먼저 설정에서 Apps Script URL을 넣어주세요. <span class="link" onclick="go(\'settings\')">설정 열기 →</span></div></div>';return}
+  box.innerHTML='<div class="card pad"><div class="empty">출결을 불러오는 중...</div></div>';
+  const r=await fetchNotionAttendance(date);
+  if(!r.ok){box.innerHTML=`<div class="card pad"><div class="empty">불러오기 실패: ${esc(r.error)}</div></div>`;return}
+  drawAttendance(r);
+}
+function drawAttendance(r){
+  const box=$('#att_body');
+  const s=r.summary||{정시:0,지각:0,결석:0,미입력:0};
+  // 상태 우선순위: 결석 → 지각 → 미입력 → 정시 (문제 학생이 위로)
+  const rank={'결석':0,'지각':1,'미입력':2,'정시등원':3};
+  const rows=[...(r.rows||[])].sort((a,b)=>(rank[a.status]??9)-(rank[b.status]??9)||(a.name||'').localeCompare(b.name||''));
+  const stColor={'정시등원':'var(--ok)','지각':'var(--warn)','결석':'var(--coral)','미입력':'var(--muted)'};
+  const stBg={'정시등원':'var(--ok-soft)','지각':'var(--warn-soft)','결석':'var(--coral-soft)','미입력':'var(--cream-2)'};
+  const stLabel={'정시등원':'정시','지각':'지각','결석':'결석','미입력':'미입력'};
+  box.innerHTML=`
+  <div class="grid g-stats" style="margin-bottom:18px">
+    <div class="stat"><div class="lbl">오늘 등원 예정</div><div class="num">${r.count}<small>명</small></div><span class="tag">📍</span><div class="kpi-foot">${r.date}</div></div>
+    <div class="stat" style="border-top:3px solid var(--ok)"><div class="lbl">정시 등원</div><div class="num">${s.정시}<small>명</small></div></div>
+    <div class="stat gold"><div class="lbl">지각</div><div class="num">${s.지각}<small>명</small></div></div>
+    <div class="stat accent"><div class="lbl">결석</div><div class="num">${s.결석}<small>명</small></div><div class="kpi-foot">미입력 ${s.미입력}명</div></div>
+  </div>
+  <div class="card pad">
+    <div class="card-title">출결 명단 — ${r.date}</div>
+    <div class="card-sub">결석·지각이 위로 정렬됩니다 · 태도(상/중/하)도 함께 표시</div>
+    ${rows.length?`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-top:14px">
+      ${rows.map(x=>`<div style="border:1px solid var(--line);border-left:4px solid ${stColor[x.status]||'var(--muted)'};border-radius:10px;padding:11px 13px;background:${x.status==='결석'||x.status==='지각'?stBg[x.status]:'var(--white)'}">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <span style="font-weight:700;color:var(--navy)">${esc(x.name||x.sid||'-')}</span>
+          <span class="badge" style="background:${stBg[x.status]};color:${stColor[x.status]}">${stLabel[x.status]||x.status}</span>
+        </div>
+        <div style="font-size:11.5px;color:var(--muted);margin-top:4px">${esc(x.sid||'')}${x.attitude?' · 태도 '+esc(x.attitude):''}</div>
+      </div>`).join('')}
+    </div>`:'<div class="empty">이 날짜에 등록된 출결 데이터가 없습니다. (스터디플래너에 해당 날짜 행이 있어야 표시됩니다)</div>'}
+  </div>`;
+}
+
+/* ============ 수강료 청구·수납 (결제선생 1단계 + API 연동 대비) ============ */
+const INV_STATUS=['미청구','청구함','입금완료','미납'];
+function curMonth(){return new Date().toISOString().slice(0,7)}
+function renderBilling(){
+  const ym=$('#bill_month')?.value||curMonth();
+  $('#content').innerHTML=`
+  <div class="page-head"><h1>수강료 청구·수납</h1><p>월별 수강료를 청구하고 입금 상태를 관리합니다. 청구서 발송은 결제선생에서, 여기서는 대상·상태를 추적합니다</p></div>
+  <div class="hint" style="margin-bottom:18px">💡 결제선생은 알림톡으로 청구서를 보내고 카드사가 직접 정산하는 방식이라 PG 수수료가 낮아요. <b>지금 단계</b>는 이 화면에서 청구 대상·금액·입금 여부를 관리하고, 청구 문안은 [알림톡 작성]에서 자동 생성합니다. <b>나중에</b> 결제선생 API를 붙이면 청구서 자동 발송·수납 자동 확인까지 확장돼요(설정에서 연동).</div>
+  <div class="card pad" style="margin-bottom:18px">
+    <div style="display:flex;align-items:flex-end;gap:14px;flex-wrap:wrap">
+      <div class="field" style="margin:0"><label>청구 월</label><input class="control" id="bill_month" type="month" value="${ym}" style="width:170px"></div>
+      <button class="btn btn-primary" id="genInvoices">이 달 재원생 일괄 청구 생성</button>
+      <span class="hint" style="flex:1;min-width:180px">재원생 전원에 대해 설정된 월 수강료로 청구 건을 만듭니다 (이미 있으면 건너뜀).</span>
+    </div>
+  </div>
+  <div class="grid g-stats" style="margin-bottom:18px" id="billStats"></div>
+  <div class="card pad">
+    <div class="card-title">청구 목록 — <span id="billTitle">${ym}</span></div>
+    <div class="card-sub">상태를 바꾸려면 상태 칸의 버튼을 누르세요</div>
+    <table><thead><tr><th>학생</th><th>금액</th><th>상태</th><th>청구일</th><th>입금일</th><th>작업</th></tr></thead><tbody id="billBody"></tbody></table>
+  </div>`;
+  $('#bill_month').onchange=()=>renderBilling();
+  $('#genInvoices').onclick=()=>genInvoices(ym);
+  drawBilling(ym);
+}
+function monthInvoices(ym){return DB.invoices.filter(i=>i.month===ym)}
+function genInvoices(ym){
+  const active=DB.students.filter(s=>s.status==='재원');
+  let made=0;
+  active.forEach(s=>{
+    if(DB.invoices.some(i=>i.sid===s.id&&i.month===ym))return;
+    DB.invoices.unshift({id:uid(),sid:s.id,name:s.name,month:ym,amount:s.fee||0,status:(s.fee||0)>0?'청구함':'미청구',billedAt:(s.fee||0)>0?today():'',paidAt:'',
+      // 결제선생 API 연동 대비 필드 (지금은 비워둠)
+      payssamInvoiceId:'',payssamUrl:''});
+    made++;
+  });
+  save();renderBilling();toast(made?`${made}건 청구 생성`:'이미 모두 생성되어 있어요');
+}
+function drawBilling(ym){
+  const list=monthInvoices(ym);
+  const paid=list.filter(i=>i.status==='입금완료'),unpaid=list.filter(i=>i.status==='미납'),billed=list.filter(i=>i.status==='청구함');
+  const total=list.reduce((s,i)=>s+(i.amount||0),0),paidSum=paid.reduce((s,i)=>s+(i.amount||0),0);
+  $('#billTitle').textContent=ym;
+  $('#billStats').innerHTML=`
+    <div class="stat"><div class="lbl">청구 총액</div><div class="num" style="font-size:24px">${total.toLocaleString()}<small>원</small></div><div class="kpi-foot">${list.length}건</div></div>
+    <div class="stat" style="border-top:3px solid var(--ok)"><div class="lbl">입금 완료</div><div class="num" style="font-size:24px">${paidSum.toLocaleString()}<small>원</small></div><div class="kpi-foot">${paid.length}건</div></div>
+    <div class="stat accent"><div class="lbl">미납</div><div class="num" style="font-size:24px">${unpaid.length}<small>건</small></div><div class="kpi-foot">독촉 대상</div></div>
+    <div class="stat gold"><div class="lbl">청구함(대기)</div><div class="num" style="font-size:24px">${billed.length}<small>건</small></div><div class="kpi-foot">입금 대기 중</div></div>`;
+  $('#billBody').innerHTML=list.length?list.map(i=>{
+    const sb={'미청구':'rest','청구함':'gold','입금완료':'active','미납':'consult'};
+    const next={'미청구':'청구함','청구함':'입금완료','입금완료':'미납','미납':'입금완료'};
+    return `<tr>
+      <td><b>${esc(i.name)}</b></td>
+      <td>${i.amount?i.amount.toLocaleString()+'원':'-'}</td>
+      <td><span class="badge ${sb[i.status]==='gold'?'rest':sb[i.status]}" style="${i.status==='청구함'?'background:var(--gold-soft);color:var(--gold)':''}">${esc(i.status)}</span></td>
+      <td style="font-size:12px;color:var(--muted)">${i.billedAt||'-'}</td>
+      <td style="font-size:12px;color:var(--muted)">${i.paidAt||'-'}</td>
+      <td style="white-space:nowrap">
+        <button class="btn btn-sm btn-ghost" onclick="cycleInv('${i.id}')">${i.status==='입금완료'?'미납 처리':i.status==='미납'?'입금 처리':i.status==='청구함'?'입금 처리':'청구 처리'}</button>
+        <button class="btn btn-sm btn-ghost" onclick="billToKakao('${i.id}')">청구 문안</button>
+        <button class="btn btn-sm btn-danger" onclick="delInv('${i.id}')">삭제</button>
+      </td></tr>`}).join('')
+    :'<tr><td colspan="6" class="empty">이 달 청구 건이 없습니다. 위에서 일괄 청구를 생성하세요.</td></tr>';
+}
+function cycleInv(id){
+  const i=DB.invoices.find(x=>x.id===id);if(!i)return;
+  const order={'미청구':'청구함','청구함':'입금완료','입금완료':'미납','미납':'입금완료'};
+  i.status=order[i.status];
+  if(i.status==='청구함'&&!i.billedAt)i.billedAt=today();
+  if(i.status==='입금완료')i.paidAt=today();
+  if(i.status==='미납')i.paidAt='';
+  save();drawBilling(i.month);toast(`${i.name} → ${i.status}`);
+}
+function delInv(id){const i=DB.invoices.find(x=>x.id===id);DB.invoices=DB.invoices.filter(x=>x.id!==id);save();drawBilling(i.month);toast('삭제했어요')}
+function billToKakao(id){const i=DB.invoices.find(x=>x.id===id);if(!i)return;sessionDraft={sid:i.sid,name:i.name,billing:i};go('kakao')}
+
+/* ============ 월말평가서 ============ */
+const RP_AREAS=[{k:'attend',nm:'출석',c:'#3F7A52'},{k:'attitude',nm:'수업태도',c:'#BC8A30'},{k:'word',nm:'단어테스트',c:'#D9543C'},{k:'hw',nm:'과제완료',c:'#1E2B47'},{k:'progress',nm:'진도성취',c:'#7A6CC4'}];
+let rpScores={attend:90,attitude:80,word:75,hw:85,progress:80};
+function renderReport(){
+  rpScores={attend:90,attitude:80,word:75,hw:85,progress:80};
+  const ym=new Date().toISOString().slice(0,7);
+  $('#content').innerHTML=`
+  <div class="page-head"><h1>월말평가서</h1><p>Notion 한 달치 집계 결과를 받아 카드형 리포트로 정리하고, AI 학부모 코멘트를 작성·발행합니다</p></div>
+  <div class="hint" style="margin-bottom:18px">📌 출결·태도·단어·과제·진도 <b>집계는 Apps Script(Notion)에서</b> 이뤄지고, 여기서는 그 <b>결과 수치만</b> 넣으면 됩니다. 수치를 조정하면 성취 차트와 코멘트가 함께 갱신돼요.</div>
+  <div class="grid g-55" style="margin-bottom:18px">
+    <div class="card pad">
+      <div class="card-title">집계 결과 입력</div>
+      <div class="card-sub">학생·평가월을 고르고 영역별 성취율(%)을 넣으세요</div>
+      <div class="row2 two">
+        <div class="field"><label>학생 <span class="req">*</span></label><select class="control" id="rp_stu">${DB.students.filter(s=>s.status==='재원').map(s=>`<option value="${s.id}">${esc(s.name)} (${esc(s.grade||'')})</option>`).join('')}</select></div>
+        <div class="field"><label>평가 월</label><input class="control" id="rp_month" type="month" value="${ym}"></div>
+      </div>
+      <div class="field"><label><input type="checkbox" id="rp_mid"> 중학생 — 내신 대비 내용 포함</label></div>
+      <div class="divider"></div>
+      <div style="font-size:13px;font-weight:700;color:var(--navy);margin-bottom:12px">영역별 성취율 <span class="pill">차트 연동</span></div>
+      ${RP_AREAS.map(a=>`<div class="slider-row"><div class="nm">${a.nm}</div><input type="range" min="0" max="100" value="${rpScores[a.k]}" data-rk="${a.k}"><div class="val" id="rpv_${a.k}">${rpScores[a.k]}</div></div>`).join('')}
+      <div class="divider"></div>
+      <div class="row2 two">
+        <div class="field"><label>단어테스트 통과율 메모</label><input class="control" id="rp_word" placeholder="예: 8/10회 통과, 평균 17/20"></div>
+        <div class="field"><label>출결 메모</label><input class="control" id="rp_attend" placeholder="예: 정시 14 / 지각 2 / 결석 0"></div>
+      </div>
+      <div class="field"><label>이번 달 진도 & 교재 전환</label><textarea class="control" id="rp_prog" placeholder="예: 시제ST1 마무리 → 시제ST2 진입 / 리딩튜터 챌린저 후반부"></textarea></div>
+      <div class="field"><label>선생님 참고사항 (AI가 참고)</label><textarea class="control" id="rp_note" placeholder="예: 집중력 향상 중 / 단어 암기 싫어함 / 5형식 어려워함"></textarea></div>
+    </div>
+    <div class="card pad">
+      <div class="radar-cap"><div class="card-title">학습 성취 분석</div><div class="card-sub">5개 영역 성취율 실시간 반영</div></div>
+      <div class="radar-wrap" id="rpRadar"></div>
+      <div class="divider"></div>
+      ${RP_AREAS.map(a=>`<div style="margin-bottom:9px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px"><span style="font-weight:600">${a.nm}</span><span style="font-weight:700;color:${a.c}" id="rpb_${a.k}">${rpScores[a.k]}%</span></div><div style="height:8px;background:var(--gold-soft);border-radius:6px"><div id="rpbar_${a.k}" style="height:100%;width:${rpScores[a.k]}%;background:${a.c};border-radius:6px;transition:.2s"></div></div></div>`).join('')}
+    </div>
+  </div>
+  <div class="card pad" style="margin-bottom:18px">
+    <div class="card-title">AI 월간 학습 리포트 코멘트</div>
+    <div class="card-sub">본원 작성 규칙(구체적 날짜·유닛번호 미표기, 시기 표현 사용, 구문 학습 정의 포함)에 맞춰 작성합니다</div>
+    <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+      <button class="btn btn-navy" id="rpGen">리포트 코멘트 생성</button>
+      <span class="hint" style="flex:1;min-width:200px">이미 Apps Script가 만든 코멘트가 있으면 아래 칸에 <b>붙여넣어 보관·인쇄</b>만 해도 돼요.</span>
+    </div>
+    <textarea class="commentary" id="rpComm" style="width:100%;border-color:var(--line)" placeholder="여기에 코멘트가 생성되거나, Apps Script 결과를 붙여넣으세요.">${''}</textarea>
+  </div>
+  <div class="card pad" style="margin-bottom:18px">
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <button class="btn btn-gold" id="rpSave">평가서 저장</button>
+      <button class="btn btn-primary" id="rpPrint">저장 및 인쇄</button>
+      <button class="btn btn-ghost" id="rpToKakao">이 결과로 알림톡 문안 만들기 →</button>
+    </div>
+  </div>
+  <div class="card pad">
+    <div class="card-title">발행한 월말평가서 (${DB.reports.length}건)</div>
+    <table><thead><tr><th>발행일</th><th>학생</th><th>평가월</th><th>평균</th><th></th><th></th></tr></thead><tbody id="rpBody"></tbody></table>
+  </div>`;
+  drawRpRadar();drawRpList();
+  document.querySelectorAll('input[data-rk]').forEach(r=>r.oninput=()=>{const k=r.dataset.rk;rpScores[k]=+r.value;$('#rpv_'+k).textContent=r.value;$('#rpb_'+k).textContent=r.value+'%';$('#rpbar_'+k).style.width=r.value+'%';drawRpRadar()});
+  $('#rpGen').onclick=genReport;
+  $('#rpSave').onclick=()=>saveReport(false);
+  $('#rpPrint').onclick=()=>saveReport(true);
+  $('#rpToKakao').onclick=()=>{const r=collectReport();if(!r)return;sessionDraft=r;go('kakao')};
+}
+function drawRpRadar(){
+  const S=250,c=S/2,R=86,n=RP_AREAS.length;
+  const pt=(i,r)=>{const a=-Math.PI/2+i*2*Math.PI/n;return[c+r*Math.cos(a),c+r*Math.sin(a)]};
+  let rings='';[0.25,0.5,0.75,1].forEach(f=>rings+=`<polygon points="${RP_AREAS.map((_,i)=>pt(i,R*f).join(',')).join(' ')}" fill="none" stroke="#E4DCC9"/>`);
+  let axes='',labels='';RP_AREAS.forEach((a,i)=>{const[x,y]=pt(i,R);axes+=`<line x1="${c}" y1="${c}" x2="${x}" y2="${y}" stroke="#E4DCC9"/>`;const[lx,ly]=pt(i,R+20);labels+=`<text x="${lx}" y="${ly}" font-size="10.5" font-weight="700" fill="#1E2B47" text-anchor="middle">${a.nm}</text>`});
+  const poly=RP_AREAS.map((a,i)=>pt(i,R*rpScores[a.k]/100).join(',')).join(' ');
+  $('#rpRadar').innerHTML=`<svg viewBox="0 0 ${S} ${S}" style="width:100%;max-width:290px">${rings}${axes}<polygon points="${poly}" fill="rgba(188,138,48,.2)" stroke="#BC8A30" stroke-width="2.5"/>${RP_AREAS.map((a,i)=>{const[x,y]=pt(i,R*rpScores[a.k]/100);return`<circle cx="${x}" cy="${y}" r="4" fill="#BC8A30"/>`}).join('')}${labels}</svg>`;
+}
+function collectReport(){
+  const stu=DB.students.find(s=>s.id===$('#rp_stu').value);if(!stu){toast('학생을 선택해주세요');return null}
+  return{id:uid(),sid:stu.id,name:stu.name,grade:stu.grade,month:$('#rp_month').value,mid:$('#rp_mid').checked,scores:{...rpScores},wordMemo:$('#rp_word').value.trim(),attendMemo:$('#rp_attend').value.trim(),prog:$('#rp_prog').value.trim(),note:$('#rp_note').value.trim(),commentary:$('#rpComm').value.trim(),date:today()};
+}
+function buildRuleReport(r){
+  const avg=Math.round(RP_AREAS.reduce((s,a)=>s+r.scores[a.k],0)/RP_AREAS.length);
+  const lvl=v=>v>=90?'매우 우수한':v>=80?'안정적인':v>=70?'성실한':'보강이 필요한';
+  return `# ${esc(r.name)} 학생 ${r.month.replace('-','년 ')}월 월간 학습 리포트
+
+## 수업 평가 및 학습 현황
+
+${esc(r.name)} 학생은 이번 달 ${lvl(r.scores.attend)} 출석률과 ${lvl(r.scores.attitude)} 수업 태도를 보여주었습니다. 단어 학습은 ${lvl(r.scores.word)} 성취를 나타냈고, 과제 수행에서도 ${lvl(r.scores.hw)} 태도로 임했습니다.
+
+${r.prog?`진도 면에서는 ${esc(r.prog)} 학습을 이어가고 있습니다. `:''}구문 학습은 배운 문법 지식을 실제 문장에 적용하여 문장 구조를 정확히 파악하고, 영어 어순을 자연스럽게 체화하기 위한 과정입니다. 이를 통해 복잡한 문장도 정확히 해석할 수 있고, 나아가 스스로 올바른 문장을 만들어내는 영작 능력까지 키울 수 있습니다.
+
+${r.note?`특히 ${esc(r.note)} 부분을 함께 살피며 지도하고 있습니다. `:''}다음 달에는 현재의 학습 흐름을 유지하면서 ${r.scores.word<r.scores.hw?'어휘 정착':'독해 정확도'}에 조금 더 무게를 두어 균형 있는 성장을 이끌어가겠습니다.
+
+(영역 평균 ${avg}점 · 본 리포트는 학습 참고용입니다)`;
+}
+async function genReport(){
+  const r=collectReport();if(!r)return;
+  const comm=$('#rpComm');const key=DB.settings.apiKey;
+  if(!key){const txt=buildRuleReport(r);comm.value=txt;toast('규칙 기반 리포트를 생성했어요 (API 키 없음)');return}
+  comm.value='AI가 월간 리포트를 작성 중입니다...';
+  const prompt=`너는 '홍보은영어학원' 선생님이다. 아래 데이터로 학생 월간 학습 리포트를 한국어로 작성하라.
+[작성 규칙 — 반드시 지킬 것]
+- 제목: # ${r.name} 학생 ${r.month} 월간 학습 리포트
+- 본문 헤더: ## 수업 평가 및 학습 현황
+- 구체적 날짜(1월 5일), 세부 유닛번호(Unit 12, Day 38, CH 3)는 절대 쓰지 말 것. 대신 '초반/중순/후반' 같은 시기 표현과 내용 중심 표현 사용.
+- '최종 진도' 섹션, '데이터 검증' 섹션, 담당교사·메타데이터 표는 넣지 말 것.
+- 구문 영역 설명 시 반드시 포함: "구문 학습은 배운 문법 지식을 실제 문장에 적용하여 문장 구조를 정확히 파악하고, 영어 어순을 자연스럽게 체화하기 위한 과정입니다. 이를 통해 복잡한 문장도 정확히 해석할 수 있고, 나아가 스스로 올바른 문장을 만들어내는 영작 능력까지 키울 수 있습니다."
+- 교재 전환이 있으면 자연스럽게 언급(유닛번호 없이 교재명만).
+${r.mid?'- 중학생이므로 내신 대비 관점을 포함.':''}
+[데이터]
+학생: ${r.name} (${r.grade})
+성취율 - 출석:${r.scores.attend}%, 태도:${r.scores.attitude}%, 단어:${r.scores.word}%, 과제:${r.scores.hw}%, 진도:${r.scores.progress}%
+단어테스트: ${r.wordMemo||'-'} / 출결: ${r.attendMemo||'-'}
+진도·교재전환: ${r.prog||'-'}
+선생님 참고: ${r.note||'-'}`;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:DB.settings.model||'claude-sonnet-4-6',max_tokens:1200,messages:[{role:'user',content:prompt}]})});
+    const data=await res.json();if(data.error)throw new Error(data.error.message);
+    comm.value=data.content.filter(c=>c.type==='text').map(c=>c.text).join('\n');toast('AI 리포트를 생성했어요');
+  }catch(e){comm.value=buildRuleReport(r)+`\n\n(AI 호출 실패: ${e.message})`;toast('AI 호출 실패 → 규칙 기반 대체')}
+}
+function saveReport(print){
+  const r=collectReport();if(!r)return;
+  if(!r.commentary)r.commentary=buildRuleReport(r);
+  DB.reports.unshift(r);save();toast(print?'저장 후 인쇄합니다':'평가서를 저장했어요');
+  if(print)printReport(r.id);else renderReport();
+}
+function drawRpList(){
+  $('#rpBody').innerHTML=DB.reports.length?DB.reports.map(r=>{const avg=Math.round(RP_AREAS.reduce((s,a)=>s+r.scores[a.k],0)/RP_AREAS.length);return`
+    <tr><td>${r.date}</td><td><b>${esc(r.name)}</b></td><td>${r.month}</td><td style="font-weight:800;color:var(--gold)">${avg}</td>
+    <td><button class="btn btn-sm btn-ghost" onclick="printReport('${r.id}')">인쇄/PDF</button></td>
+    <td><button class="btn btn-sm btn-danger" onclick="delReport('${r.id}')">삭제</button></td></tr>`}).join('')
+    :'<tr><td colspan="6" class="empty">발행한 평가서가 없습니다</td></tr>';
+}
+function delReport(id){if(!confirm('이 평가서를 삭제할까요?'))return;DB.reports=DB.reports.filter(r=>r.id!==id);save();renderReport();toast('삭제했어요')}
+function printReport(id){
+  const r=DB.reports.find(x=>x.id===id);if(!r)return;
+  const avg=Math.round(RP_AREAS.reduce((s,a)=>s+r.scores[a.k],0)/RP_AREAS.length);
+  const html=(r.commentary||'').replace(/^# (.+)$/m,'<h1 style="font-size:22px;color:#1E2B47;margin:0 0 4px">$1</h1>').replace(/^## (.+)$/gm,'<h2 style="font-size:15px;color:#BC8A30;margin:18px 0 8px">$1</h2>').replace(/\n/g,'<br>');
+  $('#printArea').innerHTML=`
+  <div style="font-family:'Pretendard',sans-serif;color:#27313F;padding:38px 30px;max-width:720px;margin:0 auto">
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;border-bottom:3px solid #1E2B47;padding-bottom:14px;margin-bottom:20px">
+      <div><div style="font-size:13px;color:#BC8A30;font-weight:700">홍보은영어학원 · 구문정독</div><div style="font-size:22px;font-weight:800;color:#1E2B47;margin-top:4px">월간 학습 리포트</div></div>
+      <div style="text-align:right;font-size:12px;color:#7A8190">${r.month} · 발행 ${r.date}</div>
+    </div>
+    <div style="display:flex;gap:22px;margin-bottom:22px;align-items:center">
+      <div style="width:190px;flex-shrink:0">${rpPrintRadar(r.scores)}</div>
+      <div style="flex:1">${RP_AREAS.map(a=>`<div style="margin-bottom:8px"><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:2px"><span style="font-weight:600">${a.nm}</span><span style="font-weight:700;color:${a.c}">${r.scores[a.k]}%</span></div><div style="height:7px;background:#EDE0C4;border-radius:6px"><div style="height:100%;width:${r.scores[a.k]}%;background:${a.c};border-radius:6px"></div></div></div>`).join('')}<div style="text-align:right;font-size:12px;color:#7A8190;margin-top:6px">영역 평균 <b style="color:#BC8A30">${avg}점</b></div></div>
+    </div>
+    <div style="font-size:13px;line-height:1.8">${html}</div>
+    <div style="margin-top:28px;text-align:center;font-size:11px;color:#7A8190;border-top:1px solid #E4DCC9;padding-top:12px">홍보은영어학원 · 일산/고양 구문정독 전문</div>
+  </div>`;
+  window.print();
+}
+function rpPrintRadar(sc){
+  const S=180,c=S/2,R=58,n=RP_AREAS.length;
+  const pt=(i,r)=>{const a=-Math.PI/2+i*2*Math.PI/n;return[c+r*Math.cos(a),c+r*Math.sin(a)]};
+  let rings='';[0.5,1].forEach(f=>rings+=`<polygon points="${RP_AREAS.map((_,i)=>pt(i,R*f).join(',')).join(' ')}" fill="none" stroke="#E4DCC9"/>`);
+  let labels='';RP_AREAS.forEach((a,i)=>{const[x,y]=pt(i,R+13);labels+=`<text x="${x}" y="${y}" font-size="8.5" font-weight="700" fill="#1E2B47" text-anchor="middle">${a.nm}</text>`});
+  const poly=RP_AREAS.map((a,i)=>pt(i,R*(sc[a.k]||0)/100).join(',')).join(' ');
+  return `<svg viewBox="0 0 ${S} ${S}" style="width:100%">${rings}<polygon points="${poly}" fill="rgba(188,138,48,.22)" stroke="#BC8A30" stroke-width="2"/>${labels}</svg>`;
+}
+
+/* ============ 단어재시 추적 ============ */
+function renderRetest(){
+  const risk=aggRetestRisk();
+  $('#content').innerHTML=`
+  <div class="page-head"><h1>단어재시 추적</h1><p>단어테스트 미통과·재시 상태를 학생별로 누적 관리합니다 (스터디플래너 단어테스트 결과 기반)</p></div>
+  <div class="grid g-2" style="margin-bottom:18px">
+    <div class="card pad">
+      <div class="card-title">⚠️ 미통과 누적 우선 관리</div>
+      <div class="card-sub">미통과가 쌓인 학생부터 재시를 챙기세요</div>
+      ${risk.length?risk.map(r=>`<div class="activity"><span class="who">${esc(r.name)}</span><span class="badge ${r.total>=3?'consult':'rest'}">미통과 누적 ${r.total}회</span></div>`).join(''):'<div class="empty">재시 적체 학생이 없습니다 👍</div>'}
+    </div>
+    <div class="card pad">
+      <div class="card-title">재시 기록 추가</div>
+      <div class="card-sub">단어/리딩 테스트 결과를 기록하세요</div>
+      <div class="row2 two">
+        <div class="field"><label>학생 <span class="req">*</span></label><select class="control" id="rt_stu">${DB.students.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('')}</select></div>
+        <div class="field"><label>교재/유닛</label><input class="control" id="rt_book" placeholder="예: 능률보카 U12"></div>
+      </div>
+      <div class="row2">
+        <div class="field"><label>결과</label><select class="control" id="rt_result"><option>미통과</option><option>통과</option></select></div>
+        <div class="field"><label>재시 상태</label><select class="control" id="rt_status"><option>다음시간 재시</option><option>구두로 재시</option><option>재시 완료</option></select></div>
+        <div class="field"><label>점수(선택)</label><input class="control" id="rt_score" placeholder="예: 15/20"></div>
+      </div>
+      <button class="btn btn-primary" id="rt_add">재시 기록 추가</button>
+    </div>
+  </div>
+  <div class="card pad">
+    <div class="card-title">전체 재시 이력 (${DB.retests.length}건)</div>
+    <table><thead><tr><th>날짜</th><th>학생</th><th>교재/유닛</th><th>결과</th><th>재시 상태</th><th>점수</th><th></th></tr></thead><tbody id="rtBody"></tbody></table>
+  </div>`;
+  drawRt();
+  $('#rt_add').onclick=()=>{
+    const stu=DB.students.find(s=>s.id===$('#rt_stu').value);const result=$('#rt_result').value;
+    DB.retests.unshift({id:uid(),sid:stu.id,name:stu.name,book:$('#rt_book').value.trim(),result,count:result==='미통과'?1:0,status:$('#rt_status').value,score:$('#rt_score').value.trim(),date:today()});
+    save();renderRetest();toast(`${stu.name} 재시 기록 추가`);
+  };
+}
+function drawRt(){
+  $('#rtBody').innerHTML=DB.retests.length?DB.retests.map(r=>`
+    <tr><td>${r.date}</td><td><b>${esc(r.name)}</b></td><td>${esc(r.book||'-')}</td>
+    <td>${r.result==='통과'?'<span class="badge active">통과</span>':'<span class="badge consult">미통과</span>'}</td>
+    <td style="font-size:12px">${esc(r.status||'-')}</td><td style="font-size:12px">${esc(r.score||'-')}</td>
+    <td><button class="btn btn-sm btn-danger" onclick="delRt('${r.id}')">삭제</button></td></tr>`).join('')
+    :'<tr><td colspan="7" class="empty">재시 이력이 없습니다</td></tr>';
+}
+function delRt(id){DB.retests=DB.retests.filter(r=>r.id!==id);save();renderRetest();toast('삭제했어요')}
+
+/* ============ 미완료 과제 적체 ============ */
+function renderPending(){
+  const risk=aggPendingRisk();
+  $('#content').innerHTML=`
+  <div class="page-head"><h1>미완료 과제 적체</h1><p>미완료 과제가 반복되는 학생을 포착해 집중 관리합니다 (과제완료DB 미완료과제 기반)</p></div>
+  <div class="grid g-2" style="margin-bottom:18px">
+    <div class="card pad">
+      <div class="card-title">⏳ 미완료 누적 우선 관리</div>
+      <div class="card-sub">미완료가 반복되는 학생부터 챙기세요</div>
+      ${risk.length?risk.map(r=>`<div class="activity"><span class="who">${esc(r.name)}</span><span class="badge ${r.count>=3?'consult':'rest'}">미완료 ${r.count}건</span></div>`).join(''):'<div class="empty">과제 적체 학생이 없습니다 👍</div>'}
+    </div>
+    <div class="card pad">
+      <div class="card-title">미완료 과제 기록 추가</div>
+      <div class="card-sub">남은 과제를 기록해두면 적체가 추적됩니다</div>
+      <div class="row2 two">
+        <div class="field"><label>학생 <span class="req">*</span></label><select class="control" id="pd_stu">${DB.students.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join('')}</select></div>
+        <div class="field"><label>교재</label><input class="control" id="pd_book" placeholder="예: 시제ST1"></div>
+      </div>
+      <div class="row2 two">
+        <div class="field"><label>유형</label><select class="control" id="pd_type"><option>집과제</option><option>학원과제</option></select></div>
+        <div class="field"><label>미완료 항목 (쉼표 구분)</label><input class="control" id="pd_items" placeholder="예: 워크북, 컴투맨 구문정독"></div>
+      </div>
+      <button class="btn btn-primary" id="pd_add">미완료 기록 추가</button>
+    </div>
+  </div>
+  <div class="card pad">
+    <div class="card-title">전체 미완료 이력 (${DB.pending.length}건)</div>
+    <table><thead><tr><th>날짜</th><th>학생</th><th>유형</th><th>교재</th><th>미완료 항목</th><th></th></tr></thead><tbody id="pdBody"></tbody></table>
+  </div>`;
+  drawPd();
+  $('#pd_add').onclick=()=>{
+    const stu=DB.students.find(s=>s.id===$('#pd_stu').value);
+    const items=$('#pd_items').value.split(',').map(x=>x.trim()).filter(Boolean);
+    if(!items.length){toast('미완료 항목을 입력해주세요');return}
+    DB.pending.unshift({id:uid(),sid:stu.id,name:stu.name,type:$('#pd_type').value,book:$('#pd_book').value.trim(),items,date:today()});
+    save();renderPending();toast(`${stu.name} 미완료 기록 추가`);
+  };
+}
+function drawPd(){
+  $('#pdBody').innerHTML=DB.pending.length?DB.pending.map(p=>`
+    <tr><td>${p.date}</td><td><b>${esc(p.name)}</b></td><td style="font-size:12px">${esc(p.type)}</td><td style="font-size:12px">${esc(p.book||'-')}</td>
+    <td style="font-size:12px;color:var(--coral)">${p.items.map(esc).join(', ')}</td>
+    <td><button class="btn btn-sm btn-danger" onclick="delPd('${p.id}')">완료/삭제</button></td></tr>`).join('')
+    :'<tr><td colspan="6" class="empty">미완료 과제가 없습니다 👍</td></tr>';
+}
+function delPd(id){DB.pending=DB.pending.filter(p=>p.id!==id);save();renderPending();toast('처리했어요')}
+
+/* ============ 학부모 알림톡 ============ */
+let sessionDraft=null, kkBilling=null;
+function renderKakao(){
+  const pre=sessionDraft;
+  $('#content').innerHTML=`
+  <div class="page-head"><h1>학부모 알림톡 작성</h1><p>월말평가·재시·과제 상황을 학부모용 카톡 문안으로 변환합니다. 복사해서 바로 발송하세요</p></div>
+  <div class="grid g-55" style="margin-bottom:18px">
+    <div class="card pad">
+      <div class="card-title">문안 만들기</div>
+      <div class="card-sub">학생과 알림 유형을 고르세요</div>
+      <div class="field"><label>학생 <span class="req">*</span></label><select class="control" id="kk_stu">${DB.students.map(s=>`<option value="${s.id}" ${pre&&pre.sid===s.id?'selected':''}>${esc(s.name)} (${esc(s.grade||'')})</option>`).join('')}</select></div>
+      <div class="field"><label>알림 유형</label><select class="control" id="kk_type">
+        <option value="report">월말평가 안내</option>
+        <option value="billing">수강료 청구 안내</option>
+        <option value="retest">단어재시 안내</option>
+        <option value="pending">미완료 과제 안내</option>
+        <option value="praise">칭찬·격려</option>
+      </select></div>
+      <div class="field"><label>말투</label><select class="control" id="kk_tone"><option>정중하고 따뜻하게</option><option>간결하고 사무적으로</option><option>친근하게</option></select></div>
+      <div class="field"><label>추가로 넣을 내용 (선택)</label><textarea class="control" id="kk_extra" placeholder="예: 이번 주 보강 일정 안내, 교재 구매 요청 등"></textarea></div>
+      <button class="btn btn-navy" id="kk_gen">알림톡 문안 생성</button>
+      ${pre?'<div class="hint" style="margin-top:12px">방금 월말평가 결과를 가져왔어요. [월말평가 안내]로 바로 만들 수 있어요.</div>':''}
+    </div>
+    <div class="card pad">
+      <div class="card-title">생성된 문안</div>
+      <div class="card-sub">복사해서 카카오톡에 붙여넣으세요</div>
+      <textarea class="commentary" id="kk_out" style="width:100%;border-color:var(--line);min-height:240px" placeholder="왼쪽에서 [알림톡 문안 생성]을 누르면 여기에 표시됩니다."></textarea>
+      <button class="btn btn-gold btn-block" id="kk_copy" style="margin-top:10px">📋 문안 복사하기</button>
+    </div>
+  </div>`;
+  $('#kk_gen').onclick=genKakao;
+  $('#kk_copy').onclick=()=>{const t=$('#kk_out').value;if(!t){toast('먼저 문안을 생성하세요');return}navigator.clipboard?.writeText(t).then(()=>toast('복사했어요'),()=>toast('복사 실패 — 직접 선택해 복사하세요'))};
+  if(pre&&pre.billing){$('#kk_type').value='billing';kkBilling=pre.billing}
+  sessionDraft=null;
+}
+function buildRuleKakao(stu,type,tone){
+  const r=DB.reports.find(x=>x.sid===stu.id);
+  const retest=aggRetestRisk().find(x=>x.sid===stu.id);
+  const pend=aggPendingRisk().find(x=>x.sid===stu.id);
+  const hi=`안녕하세요, 홍보은영어학원입니다. ${stu.name} 학생 학부모님께 안내드립니다.`;
+  const bye=`\n\n궁금하신 점 있으시면 언제든 편하게 연락 주세요. 감사합니다. 🙏`;
+  if(type==='billing'){const inv=kkBilling||DB.invoices.find(x=>x.sid===stu.id&&x.month===curMonth());
+    const amt=inv?.amount?inv.amount.toLocaleString()+'원':'';const mon=inv?inv.month.replace('-','년 ')+'월':'이번 달';
+    const url=DB.settings.payssam?.accountUrl;
+    return `${hi}\n\n${mon} 수강료 ${amt} 청구 안내드립니다.${url?`\n아래 결제선생 링크에서 간편하게 결제하실 수 있습니다.\n${url}`:'\n결제선생 청구서를 통해 간편하게 결제하실 수 있습니다.'}\n늘 ${stu.name} 학생의 학습에 함께해 주셔서 감사합니다.${bye}`}
+  if(type==='report'){const avg=r?Math.round(RP_AREAS.reduce((s,a)=>s+r.scores[a.k],0)/RP_AREAS.length):null;
+    return `${hi}\n\n${r?r.month+' ':''}월간 학습 리포트가 준비되었습니다.${avg!=null?`\n이번 달 종합 성취도는 ${avg}점으로, `:'\n'}${stu.name} 학생은 꾸준히 성장하고 있습니다.${r&&r.prog?`\n진도: ${r.prog}`:''}\n자세한 평가서는 별도로 전달드리겠습니다.${bye}`}
+  if(type==='retest')return `${hi}\n\n${stu.name} 학생의 단어 학습 관련 안내입니다.${retest?`\n최근 단어 테스트에서 미통과가 ${retest.total}회 누적되어, 재시를 진행하고 있습니다.`:'\n단어 테스트를 성실히 보고 있습니다.'}\n가정에서도 단어 복습을 함께 챙겨주시면 큰 도움이 됩니다.${bye}`;
+  if(type==='pending')return `${hi}\n\n${stu.name} 학생의 과제 수행 관련 안내입니다.${pend?`\n최근 미완료 과제가 ${pend.count}건 누적되어 안내드립니다.`:'\n과제를 성실히 수행하고 있습니다.'}\n가정에서 과제 완료를 한 번 더 확인해 주시면 감사하겠습니다.${bye}`;
+  return `${hi}\n\n${stu.name} 학생이 이번 주 수업에서 특히 성실한 태도를 보여주었습니다. 칭찬해 주시면 학습 동기에 큰 힘이 됩니다. 앞으로도 잘 이끌어가겠습니다. 😊${bye}`;
+}
+async function genKakao(){
+  const stu=DB.students.find(s=>s.id===$('#kk_stu').value);if(!stu){toast('학생을 선택하세요');return}
+  const type=$('#kk_type').value,tone=$('#kk_tone').value,extra=$('#kk_extra').value.trim();
+  const out=$('#kk_out');const key=DB.settings.apiKey;
+  if(!key){let t=buildRuleKakao(stu,type,tone);if(extra)t+=`\n\n${extra}`;out.value=t;toast('규칙 기반 문안 생성 (API 키 없음)');return}
+  out.value='AI가 알림톡 문안을 작성 중입니다...';
+  const r=DB.reports.find(x=>x.sid===stu.id);
+  const inv=kkBilling||DB.invoices.find(x=>x.sid===stu.id&&x.month===curMonth());
+  let ctx='';
+  if(type==='report'&&r)ctx=`월간 성취율 - 출석:${r.scores.attend}, 태도:${r.scores.attitude}, 단어:${r.scores.word}, 과제:${r.scores.hw}, 진도:${r.scores.progress} / 진도:${r.prog||'-'}`;
+  if(type==='billing'&&inv)ctx=`청구월:${inv.month}, 금액:${inv.amount?inv.amount.toLocaleString()+'원':'미정'}${DB.settings.payssam?.accountUrl?', 결제링크:'+DB.settings.payssam.accountUrl:''}`;
+  const typeKo={report:'월말평가 안내',billing:'수강료 청구 안내',retest:'단어재시 안내',pending:'미완료 과제 안내',praise:'칭찬·격려'}[type];
+  const prompt=`너는 '홍보은영어학원' 선생님이다. 학부모에게 보낼 카카오톡 알림 문안을 한국어로 작성하라. ${tone} 말투로, 3~5문장, 이모지는 1~2개만. 학원명으로 시작하고 정중히 마무리.
+유형: ${typeKo}
+학생: ${stu.name}(${stu.grade})
+${ctx}
+${extra?`추가 반영: ${extra}`:''}`;
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:DB.settings.model||'claude-sonnet-4-6',max_tokens:600,messages:[{role:'user',content:prompt}]})});
+    const data=await res.json();if(data.error)throw new Error(data.error.message);
+    out.value=data.content.filter(c=>c.type==='text').map(c=>c.text).join('\n');toast('AI 문안을 생성했어요');
+  }catch(e){let t=buildRuleKakao(stu,type,tone);if(extra)t+=`\n\n${extra}`;out.value=t+`\n\n(AI 호출 실패: ${e.message})`;toast('AI 실패 → 규칙 기반 대체')}
+}
+
+/* ============ SETTINGS ============ */
+function renderSettings(){
+  const s=DB.settings;
+  $('#content').innerHTML=`
+  <div class="page-head"><h1>시스템 및 LLM 설정</h1><p>AI 상담 코멘트 생성과 데이터 백업·복원을 관리합니다</p></div>
+  <div class="grid g-2">
+    <div class="card pad">
+      <div class="card-title">Claude API 연동</div>
+      <div class="card-sub">키를 입력하면 레벨테스트 상담 코멘트를 AI가 작성합니다 (브라우저에만 저장)</div>
+      <div class="field"><label>Anthropic API Key</label><input class="control" id="set_key" type="password" value="${esc(s.apiKey)}" placeholder="sk-ant-..."></div>
+      <div class="field"><label>모델</label><select class="control" id="set_model">
+        ${['claude-sonnet-4-6','claude-opus-4-8','claude-haiku-4-5-20251001','claude-fable-5'].map(m=>`<option ${m===s.model?'selected':''}>${m}</option>`).join('')}
+      </select></div>
+      <button class="btn btn-primary" id="saveSet">설정 저장</button>
+      <div class="hint" style="margin-top:14px">키가 없어도 모든 기능은 <b>규칙 기반</b>으로 작동해요. 키는 외부로 전송되지 않고 이 기기에만 보관됩니다.</div>
+    </div>
+    <div class="card pad">
+      <div class="card-title">Notion 연동 (Apps Script)</div>
+      <div class="card-sub">기존 Apps Script 웹앱 URL을 넣으면 학생 목록을 읽어올 수 있어요</div>
+      <div class="field"><label>Apps Script 웹앱 URL</label><input class="control" id="set_gas" value="${esc(s.gasUrl||'')}" placeholder="https://script.google.com/macros/s/.../exec"></div>
+      <button class="btn btn-primary" id="saveGas">URL 저장</button>
+      <button class="btn btn-ghost" id="testGas" style="margin-left:6px">연결 테스트</button>
+      <div class="hint" style="margin-top:14px">학생 화면의 <b>[Notion에서 불러오기]</b> 버튼이 이 URL의 <code>?action=students</code>를 호출합니다. Notion 토큰은 Apps Script 안에만 있고 이 파일엔 저장되지 않아요. 배포는 <b>액세스: 모든 사용자</b>로 해야 동작합니다.</div>
+    </div>
+    <div class="card pad">
+      <div class="card-title">결제선생 연동</div>
+      <div class="card-sub">청구 문안에 들어갈 결제 링크와 상점명을 설정합니다</div>
+      <div class="field"><label>상점(학원) 표시명</label><input class="control" id="set_shop" value="${esc(s.payssam?.shopName||'')}" placeholder="예: 홍보은영어학원"></div>
+      <div class="field"><label>결제선생 결제 링크 (선택)</label><input class="control" id="set_payurl" value="${esc(s.payssam?.accountUrl||'')}" placeholder="https://pay.payssam.kr/..."></div>
+      <button class="btn btn-primary" id="savePay">결제 설정 저장</button>
+      <div class="hint" style="margin-top:14px"><b>지금 단계</b>는 청구·수납을 이 프로그램에서 관리하고, 청구서는 결제선생 앱에서 발송합니다. <b>API 자동 발송·수납 확인</b>은 결제선생 가입·심사 후 API 키를 발급받아야 하며, 키 보안을 위해 단일 파일이 아닌 서버(Vercel) 경유로 연동하는 것을 권장해요.</div>
+    </div>
+  </div>
+    </div>
+  </div>
+    <div class="card pad" style="margin-top:18px">
+      <div class="card-title">데이터 백업 & 복원</div>
+      <div class="card-sub">전체 데이터를 JSON 파일로 내보내거나 불러옵니다</div>
+      <div style="display:flex;flex-direction:column;gap:10px;max-width:420px">
+        <button class="btn btn-navy" id="exportBtn">전체 데이터 백업 (JSON 내려받기)</button>
+        <label class="btn btn-ghost" style="text-align:center">백업 파일 복원 (JSON 불러오기)<input type="file" id="importFile" accept=".json" style="display:none"></label>
+        <button class="btn btn-danger" id="resetBtn">전체 데이터 초기화</button>
+      </div>
+      <div class="hint" style="margin-top:14px">현재 저장: 학생 <b>${DB.students.length}</b>명 · 성적 <b>${DB.grades.length}</b>건 · 상담지 <b>${DB.consults.length}</b>건 · 월말평가 <b>${DB.reports.length}</b>건 · 청구 <b>${DB.invoices.length}</b>건 · 재시 <b>${DB.retests.length}</b>건 · 미완료 <b>${DB.pending.length}</b>건. 컴퓨터를 옮기거나 데이터를 합칠 때는 백업 파일을 활용하세요.</div>
+    </div>`;
+  $('#saveSet').onclick=()=>{DB.settings.apiKey=$('#set_key').value.trim();DB.settings.model=$('#set_model').value;save();toast('설정을 저장했어요')};
+  $('#savePay').onclick=()=>{DB.settings.payssam={...DB.settings.payssam,shopName:$('#set_shop').value.trim(),accountUrl:$('#set_payurl').value.trim()};save();toast('결제 설정을 저장했어요')};
+  $('#saveGas').onclick=()=>{DB.settings.gasUrl=$('#set_gas').value.trim();save();toast('Apps Script URL을 저장했어요')};
+  $('#testGas').onclick=async()=>{const url=$('#set_gas').value.trim();if(!url){toast('URL을 먼저 입력하세요');return}DB.settings.gasUrl=url;save();toast('연결 테스트 중...');const r=await fetchNotionStudents();if(r.ok)toast(`연결 성공 — 학생 ${r.count}명 확인`);else toast('연결 실패: '+r.error)};
+  $('#exportBtn').onclick=()=>{const blob=new Blob([JSON.stringify(DB,null,2)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`홍보은학원_백업_${today()}.json`;a.click();toast('백업 파일을 내려받았어요')};
+  $('#importFile').onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const d=JSON.parse(r.result);if(!d.students)throw 0;DB=d;save();toast('데이터를 복원했어요');go('dashboard')}catch(err){toast('올바른 백업 파일이 아니에요')}};r.readAsText(f)};
+  $('#resetBtn').onclick=()=>{if(!confirm('모든 데이터를 초기화할까요? 되돌릴 수 없어요.'))return;DB=seed();save();toast('초기화했어요');go('dashboard')};
+}
+
+/* ============ NOTION 연동 (Apps Script 경유) ============ */
+async function fetchNotionStudents(){
+  const url=DB.settings.gasUrl;
+  if(!url)return{ok:false,error:'설정에 Apps Script URL이 없습니다'};
+  try{
+    const sep=url.includes('?')?'&':'?';
+    const res=await fetch(url+sep+'action=students',{method:'GET',redirect:'follow'});
+    const data=await res.json();
+    if(!data.ok)return{ok:false,error:data.error||'알 수 없는 오류'};
+    return data;
+  }catch(e){return{ok:false,error:e.message+' (배포 권한이 "모든 사용자"인지, URL이 /exec로 끝나는지 확인)'}}
+}
+async function fetchNotionAttendance(date){
+  const url=DB.settings.gasUrl;
+  if(!url)return{ok:false,error:'설정에 Apps Script URL이 없습니다'};
+  try{
+    const sep=url.includes('?')?'&':'?';
+    const res=await fetch(url+sep+'action=attendance&date='+encodeURIComponent(date),{method:'GET',redirect:'follow'});
+    const data=await res.json();
+    if(!data.ok)return{ok:false,error:data.error||'알 수 없는 오류'};
+    return data;
+  }catch(e){return{ok:false,error:e.message}}
+}
+// Notion 학생 → 로컬 학생으로 병합 (notionId 기준, 없으면 이름 기준)
+function importNotionStudents(list){
+  let added=0,updated=0;
+  list.forEach(n=>{
+    const exist=DB.students.find(s=>(n.notionId&&s.notionId===n.notionId)||(s.name===n.name&&s.school===n.school));
+    if(exist){Object.assign(exist,{notionId:n.notionId||exist.notionId,school:n.school||exist.school,grade:n.grade||exist.grade,phone:n.phone||exist.phone,pphone:n.pphone||exist.pphone,status:n.status||exist.status,fee:n.fee||exist.fee});updated++;}
+    else{DB.students.unshift({id:uid(),notionId:n.notionId,name:n.name,school:n.school,grade:n.grade,phone:n.phone,pphone:n.pphone,status:n.status||'재원',fee:n.fee||0,memo:n.memo||'',created:today()});added++;}
+  });
+  save();return{added,updated};
+}
+
+/* ============ INIT ============ */
+go('dashboard');
+</script>
+</body>
+</html>
